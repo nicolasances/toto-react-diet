@@ -23,8 +23,6 @@ export default class TotoButton extends Component {
 
     if (this.props.secondary) buttonStyle = styles.secondaryButton;
 
-    console.log(buttonStyle);
-
     return (
 
       <TouchableOpacity style={buttonStyle} onPress={this.props.onPress}>

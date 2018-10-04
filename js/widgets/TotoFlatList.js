@@ -68,7 +68,7 @@ class Item extends Component {
    * React to a data change
    */
   onDataChanged(event) {
-    if (this.state.id == event.context.item.it)
+    if (this.state.item.id == event.context.item.id)
       this.setState(event.context.item);
   }
 

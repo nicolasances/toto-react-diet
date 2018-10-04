@@ -4,7 +4,7 @@ import TotoTitleBar from '../widgets/TotoTitleBar';
 import TotoCircleValue from '../widgets/TotoCircleValue';
 import TotoFlatList from '../widgets/TotoFlatList';
 import TotoMacro from '../widgets/TotoMacro';
-import TotoButton from '../widgets/TotoButton';
+import TotoIconButton from '../widgets/TotoIconButton';
 import DietAPI from '../services/DietAPI';
 import * as TotoEventBus from '../services/TotoEventBus';
 import * as theme from '../styles/ThemeColors';
@@ -250,16 +250,14 @@ export default class NewMealScreen extends Component {
         </View>
 
         <View style={styles.buttonsContainer}>
-          <View style={styles.buttonContainer}>
-            <TotoButton
+            <TotoIconButton
+              image={require('../../img/add.png')}
               label='Add some food'
               onPress={this.onPressAddFood} />
-          </View>
-          <View style={styles.buttonContainer}>
-            <TotoButton
+            <TotoIconButton
+              image={require('../../img/tick.png')}
               label='Save'
               onPress={this.save} />
-          </View>
         </View>
 
         <View style={styles.alimentsContainer}>
@@ -315,10 +313,7 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     paddingVertical: 12,
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  buttonContainer: {
-    flex: 1,
-    alignContent: 'stretch',
-    paddingHorizontal: 6
-  }
 });
