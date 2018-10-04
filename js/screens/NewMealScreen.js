@@ -106,13 +106,20 @@ export default class NewMealScreen extends Component {
     // Create a copy of the foods array so that i can modify it
     let foods = this.state.foods;
 
+    // Define new total amounts
+    let totalCal = 0;
+    let totalP = 0;
+    let totalC = 0;
+    let totalF = 0;
+
     // Find the food in the array so that i can modify it
     let food;
     for (var i = 0; i < foods.length; i++) {
-      if (foods[i].id == event.context.food.id) {
 
-        // Pick the food
-        food = foods[i];
+      // Pick the food
+      food = foods[i];
+      
+      if (foods[i].id == event.context.food.id) {
 
         // Modify the food
         if (event.context.unit == 'gr') food.amountGr = event.context.amount;
@@ -124,25 +131,35 @@ export default class NewMealScreen extends Component {
 
         // Fire an event to notify that the data has changed!
         TotoEventBus.bus.publishEvent({name: 'totoListDataChanged', context: {item: food}});
+      }
 
-        break;
+      // Recalculate total amount
+      if (food.amountGr != null) {
+        totalCal += food.calories * food.amountGr / 100;
+        totalC += food.carbs * food.amountGr / 100;
+        totalF += food.fat * food.amountGr / 100;
+        totalP += food.proteins * food.amountGr / 100;
+      }
+      else if (food.amountMl != null) {
+        totalCal += food.calories * food.amountMl / 100;
+        totalC += food.carbs * food.amountMl / 100;
+        totalF += food.fat * food.amountMl / 100;
+        totalP += food.proteins * food.amountMl / 100;
+      }
+      else if (food.amount != null) {
+        totalCal += food.calories * food.amount;
+        totalC += food.carbs * food.amount;
+        totalF += food.fat * food.amount;
+        totalP += food.proteins * food.amount;
       }
     }
 
-    // Calculate calories
-    let addedCal = food.calories * event.context.amount / (event.context.unit != null ? 100 : 1);
-
-    // Calculate macros
-    let addedP = food.proteins * event.context.amount / (event.context.unit != null ? 100 : 1);
-    let addedC = food.carbs * event.context.amount / (event.context.unit != null ? 100 : 1);
-    let addedF = food.fat * event.context.amount / (event.context.unit != null ? 100 : 1);
-
     // Update the state
     this.setState(prevState => ({
-      calories: prevState.calories + addedCal,
-      proteins: prevState.proteins + addedP,
-      carbs: prevState.carbs + addedC,
-      fat: prevState.fat + addedF,
+      calories: totalCal,
+      proteins: totalP,
+      carbs: totalC,
+      fat: totalF,
       foods: foods
     }));
 
