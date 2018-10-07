@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, DatePickerIOS} from 'react-native';
 import TotoTitleBar from '../widgets/TotoTitleBar';
-import TotoButton from '../widgets/TotoButton';
+import TotoIconButton from '../widgets/TotoIconButton';
 import * as theme from '../styles/ThemeColors';
 import * as TotoEventBus from '../services/TotoEventBus';
 
@@ -73,7 +73,8 @@ export default class DateSelectionScreen extends Component {
 
           <View style={styles.buttonsContainer}>
             <View style={styles.buttonContainer}>
-              <TotoButton
+              <TotoIconButton
+                  image={require('../../img/tick.png')}
                   label='Confirm'
                   onPress={this.onOk} />
             </View>
@@ -99,5 +100,6 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flex: 1,
     justifyContent: 'flex-end',
+    alignItems: 'center'
   },
 });
