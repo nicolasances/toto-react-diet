@@ -89,7 +89,7 @@ export default class NewMealFoodDetailScreen extends Component {
             <Text style={styles.inputLabel}>Amount</Text>
             <TextInput
               style={styles.inputValue}
-              onChangeText={(text) => this.setState({amount: text})}
+              onChangeText={(text) => this.setState({amount: text.replace(',', '.')})}
               keyboardType='numeric' />
           </View>
 
