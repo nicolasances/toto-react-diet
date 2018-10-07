@@ -13,7 +13,7 @@ class TotoAnimatedNumber extends Component {
 
     this.state.animatedValue.addListener((progress) => {
       this.setState({value: progress.value});
-    })
+    });
 
   }
 

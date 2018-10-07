@@ -15,6 +15,16 @@ export default class TotoMacro extends Component {
 
   constructor(props) {
     super(props);
+
+    this.state = {
+      value: 0
+    }
+  }
+
+  componentWillReceiveProps(props) {
+
+    this.setState({value: props.value});
+
   }
 
   /**
@@ -26,7 +36,7 @@ export default class TotoMacro extends Component {
 
       <View style={styles.macroContainer}>
         <Text style={styles.macroLabel}>{this.props.label}</Text>
-        <TotoAnimatedNumber style={styles.macroValue} value={this.props.value} />
+        <TotoAnimatedNumber style={styles.macroValue} value={this.state.value} />
       </View>
     )
   }

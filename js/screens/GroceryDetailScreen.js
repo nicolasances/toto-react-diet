@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import AnimateNumber from 'react-native-animate-number';
 import {StyleSheet, View, Text, Image, ART, Dimensions, Animated, Easing } from 'react-native';
 import * as scale from 'd3-scale';
 import * as shape from 'd3-shape';
@@ -43,11 +42,15 @@ export default class GroceryDetailScreen extends Component {
 
     // Save the food in the state object
     this.state = {
-      food: this.props.navigation.getParam('grocery'),
+      food: {
+        carbs: 0,
+        fat: 0,
+        proteins: 0,
+        calories: 0
+      },
       category: new DietAPI().getGroceryCategory(this.props.navigation.getParam('grocery').category),
       sugarAnimatedValue: new Animated.Value(0)
-    }
-
+    };
   }
 
   /**
@@ -55,7 +58,9 @@ export default class GroceryDetailScreen extends Component {
    */
   componentDidMount() {
 
-    this.animateSugarBar(this.state.food.sugars, 1000, Easing.bounce);
+    this.setState({
+      food: this.props.navigation.getParam('grocery')
+    }, () => {this.animateSugarBar(this.state.food.sugars, 1000, Easing.bounce);});
   }
 
   /**
