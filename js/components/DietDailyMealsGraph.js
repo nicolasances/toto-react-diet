@@ -64,7 +64,14 @@ export default class DietDailyMealsGraph extends Component {
   refreshData() {
 
       new DietAPI().getTodayMeals().then((data) => {
-        this.meals = data.meals;
+        this.meals = data.meals.sort((a, b) => {
+          var ta = getTime(a.time);
+          var tb = getTime(b.time);
+
+          if (ta < tb) return -1;
+          else if (ta > tb) return 1;
+          else return 0;
+        });
         this.macroPoints();
       });
   }
@@ -128,6 +135,45 @@ export default class DietDailyMealsGraph extends Component {
   }
 
   /**
+   * Create a coll background wave
+   */
+  createWavePath() {
+
+    var maxCalories = d3.array.max(this.meals, function(d) {return d.calories});
+    var maxTimeInMeals = d3.array.max(this.meals, function(d) {return getTime(d.time)});
+    var minTimeInMeals = d3.array.min(this.meals, function(d) {return getTime(d.time)});
+
+    // Minimum and maximum macronutrient intake
+    var maxMacro = d3.array.max(this.meals, d => {return d3.array.max([d.proteins, d.carbs, d.fat])});
+    var minMacro = d3.array.min(this.meals, d => {return d3.array.min([d.proteins, d.carbs, d.fat])});
+
+    // Scale that determines the radius of the macro point
+    var radiusScale = d3.scale.scaleLinear().domain([minMacro, maxMacro]).range([this.constants.macroPointRadius.min, this.constants.macroPointRadius.max]);
+
+    // Define  actual min and max time for the scale
+    var minTime = (getTime('06:00') < minTimeInMeals) ? getTime('06:00') : minTimeInMeals;
+    var maxTime = (getTime('21:00') > maxTimeInMeals) ? getTime('21:00') : maxTimeInMeals;
+
+    var x = d3.scale.scaleLinear().domain([minTime, maxTime]).range([32, this.width - 32]);
+    var y = d3.scale.scaleLinear().domain([0, maxCalories]).range([this.height, 24 + 3 * this.constants.macroPointRadius.max + this.constants.macroPointRadius.gap * 2]);
+
+    var area = d3.shape.area()
+                  .x((d) => {return x(getTime(d.time))})
+                  .y1((d) => {return y(d.carbs * 4 + d.fat * 9 + d.proteins * 4) - 1 * (radiusScale(d.proteins) + radiusScale(d.fat) + radiusScale(d.carbs))})
+                  .y0((d) => {return y(0)})
+                  .curve(d3.shape.curveCardinal);
+
+    var path = area([{time: '00:01', carbs: 0, fat: 0, proteins: 0, calories: 0}, ...this.meals, {time: '23:59', carbs: 0, fat: 0, proteins: 0, calories: 0}]);
+
+    var key = 'wave-' + Math.random();
+
+    return (
+      <Shape key={key} d={path} strokeWidth={2} fill={theme.color().COLOR_THEME_DARK + '50'}/>
+    )
+
+  }
+
+  /**
    * Generate the shapes for the macronutrients points
    */
   macroPoints() {
@@ -153,6 +199,9 @@ export default class DietDailyMealsGraph extends Component {
     // Create the array of shapes to be added
     var shapes = [];
     var texts = [];
+
+    // Add the background wave path
+    shapes.push(this.createWavePath());
 
     // Scan the meals and extracts the proteins, carbs and fats
     for (var i = 0 ; i < this.meals.length; i++) {
