@@ -5,7 +5,9 @@ import DietDailyMealsGraph from '../components/DietDailyMealsGraph';
 import DietDaySphere from '../components/DietDaySphere';
 import DietDayMacros from '../components/DietDayMacros';
 import DietDailyMealsTimeline from '../components/DietDailyMealsTimeline';
+import WeeklyStats from '../components/WeeklyStats';
 import TotoTitleBar from '../widgets/TotoTitleBar';
+import Swiper from 'react-native-swiper';
 
 
 export default class HomeScreen extends Component<Props> {
@@ -38,7 +40,10 @@ export default class HomeScreen extends Component<Props> {
         <View style={{paddingTop: 12}}><DietDailyMealsTimeline /></View>
         <View style={{flex: 1, justifyContent: 'center'}}><DietDaySphere radius={70} /></View>
         <View style={{paddingBottom: 24, justifyContent: 'center'}}><DietDayMacros /></View>
-        <View style={{}}><DietDailyMealsGraph height={250} /></View>
+        <Swiper style={{}} showsPagination={false}>
+          <DietDailyMealsGraph height={250} />
+          <WeeklyStats height={250} />
+        </Swiper>
       </View>
     );
   }

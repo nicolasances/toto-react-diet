@@ -55,6 +55,57 @@ export default class DietAPI {
 
   }
 
+	/**
+	 * Retrieves the meals for a specified date (yyyyMMdd string) or from a specified date
+	 */
+	getMeals(date, dateFrom) {
+
+		var filter = '';
+		if (date != null) filter = '?date=' + date;
+		else if (dateFrom != null) filter = '?dateFrom=' + dateFrom;
+
+		return new TotoAPI().fetch('/diet/meals' + filter).then((response) => response.json());
+	}
+
+	/**
+	 * Returns a Map object of <date: mealsStats> where mealsStats is a {calories, proteins, fats, carbs}
+	 *
+	 */
+	getMealsPerDay(dateFrom) {
+
+		return new Promise(function(success, failure) {
+
+			var filter = '?dateFrom=' + dateFrom;
+
+			new TotoAPI().fetch('/diet/meals' + filter).then((response) => response.json()).then(function(data) {
+
+				// Get the data in the right format
+				var mealsStats = {};
+
+        // Create the Map
+				for (var i = 0; i < data.meals.length; i++) {
+
+					var stat = mealsStats[data.meals[i].date];
+
+					if (stat == null) {
+            mealsStats[data.meals[i].date] = {date: data.meals[i].date, calories: data.meals[i].calories, proteins: data.meals[i].proteins, carbs: data.meals[i].carbs, fats: data.meals[i].fat};
+          }
+					else {
+						stat.calories += data.meals[i].calories;
+						stat.proteins += data.meals[i].proteins;
+						stat.carbs += data.meals[i].carbs;
+						stat.fats += data.meals[i].fat;
+					}
+
+				}
+
+				success(mealsStats);
+
+			});
+
+		});
+	}
+
   /**
    * Returns the categories for the groceries
    */
