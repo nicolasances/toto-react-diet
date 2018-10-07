@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
+import {KeyboardAvoidingView, View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
 import TotoTitleBar from '../widgets/TotoTitleBar';
 import TotoIconButton from '../widgets/TotoIconButton';
 import * as theme from '../styles/ThemeColors';
@@ -83,13 +83,14 @@ export default class NewMealFoodDetailScreen extends Component {
 
       return (
 
-        <View style={styles.container}>
+        <KeyboardAvoidingView style={styles.container} behavior='height'>
 
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Amount</Text>
             <TextInput
               style={styles.inputValue}
-              onChangeText={(text) => this.setState({amount: text})} />
+              onChangeText={(text) => this.setState({amount: text})}
+              keyboardType='numeric' />
           </View>
 
           <View style={styles.unitsContainer}>
@@ -111,7 +112,7 @@ export default class NewMealFoodDetailScreen extends Component {
                  />
           </View>
 
-        </View>
+        </KeyboardAvoidingView>
       )
     }
 
