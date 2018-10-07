@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
 import {Animated, Easing, Text, View, StyleSheet, Dimensions, ART} from 'react-native';
-import AnimateNumber from 'react-native-animate-number';
 import * as theme from '../styles/ThemeColors';
 import * as TotoEventBus from '../services/TotoEventBus';
+import TotoMacro from '../widgets/TotoMacro';
 import DietAPI from '../services/DietAPI';
 
 export default class DietDayMacros extends Component {
@@ -85,18 +85,9 @@ export default class DietDayMacros extends Component {
   render() {
     return (
       <View style={style.container}>
-        <View style={style.macroContainer}>
-          <Text style={style.label}>Carbs</Text>
-          <AnimateNumber style={style.value} value={this.state.carbs} formatter={(val) => {return val.toFixed(0) + ' g'}}/>
-        </View>
-        <View style={style.macroContainer}>
-          <Text style={style.label}>Proteins</Text>
-          <AnimateNumber style={style.value} value={this.state.proteins} formatter={(val) => {return val.toFixed(0) + ' g'}}/>
-        </View>
-        <View style={style.macroContainer}>
-          <Text style={style.label}>Fat</Text>
-          <AnimateNumber style={style.value} value={this.state.fat} formatter={(val) => {return val.toFixed(0) + ' g'}}/>
-        </View>
+        <TotoMacro value={this.state.carbs} label='Carbs' />
+        <TotoMacro value={this.state.proteins} label='Proteins' />
+        <TotoMacro value={this.state.fat} label='Fat' />
       </View>
     );
   }
@@ -108,7 +99,7 @@ const style = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
   },
 
   macroContainer : {
