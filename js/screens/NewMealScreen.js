@@ -49,6 +49,7 @@ export default class NewMealScreen extends Component {
     this.onFoodAmountChanged = this.onFoodAmountChanged.bind(this);
     this.onDateChanged = this.onDateChanged.bind(this);
     this.save = this.save.bind(this);
+    this.saveAsPrep = this.saveAsPrep.bind(this);
   }
 
   /**
