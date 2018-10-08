@@ -139,6 +139,8 @@ export default class DietDailyMealsGraph extends Component {
    */
   createWavePath() {
 
+    if (this.meals == null || this.meals.length == 0) return;
+
     var maxCalories = d3.array.max(this.meals, function(d) {return d.calories});
     var maxTimeInMeals = d3.array.max(this.meals, function(d) {return getTime(d.time)});
     var minTimeInMeals = d3.array.min(this.meals, function(d) {return getTime(d.time)});
