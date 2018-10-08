@@ -99,6 +99,19 @@ export default class NewMealScreen extends Component {
   }
 
   /**
+   * Saves this meal as a meal prep
+   */
+  saveAsPrep() {
+
+    // Call the API
+    new DietAPI().postMealPrep(this.state).then(data => {
+
+      // Go back
+      this.props.navigation.goBack();
+    });
+  }
+
+  /**
    * React to the event of amount of food changed
    */
   onFoodAmountChanged(event) {
@@ -118,7 +131,7 @@ export default class NewMealScreen extends Component {
 
       // Pick the food
       food = foods[i];
-      
+
       if (foods[i].id == event.context.food.id) {
 
         // Modify the food
@@ -275,6 +288,10 @@ export default class NewMealScreen extends Component {
               image={require('../../img/tick.png')}
               label='Save'
               onPress={this.save} />
+            <TotoIconButton
+              image={require('../../img/clock.png')}
+              label='Save as prep'
+              onPress={this.saveAsPrep} />
         </View>
 
         <View style={styles.alimentsContainer}>

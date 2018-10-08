@@ -31,10 +31,34 @@ export default class DietAPI {
       aliments: meal.foods
     };
 
-    console.log(meal);
-
     // Post the data
     return new TotoAPI().fetch('/diet/meals', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }).then((response => response.json()));
+  }
+
+  /**
+   * Saves the provided meal as a prep
+   */
+  postMealPrep(meal) {
+
+    let data = {
+      date: meal.mealDate,
+      time: meal.mealTime,
+      calories: meal.calories,
+      fat: meal.fat,
+      carbs: meal.carbs,
+      sugars: meal.sugars,
+      proteins: meal.proteins,
+      aliments: meal.foods
+    };
+
+    // Post the data
+    return new TotoAPI().fetch('/diet/mealPreps', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
