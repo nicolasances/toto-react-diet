@@ -55,6 +55,14 @@ export default class DietAPI {
 
   }
 
+  /**
+   * Retrieve the meal preps
+   */
+  getMealPreps() {
+
+    return new TotoAPI().fetch('/diet/mealPreps').then((response) => response.json());
+  }
+
 	/**
 	 * Retrieves the meals for a specified date (yyyyMMdd string) or from a specified date
 	 */

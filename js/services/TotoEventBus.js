@@ -23,7 +23,12 @@ const TotoEvents = [
                      /**
                       * Event thrown when a new meal has been added
                       */
-                     'mealAdded'
+                     'mealAdded',
+
+                     /**
+                      * Event called when a meal prep is selected in the meal prep screen
+                      */
+                     'mealPrepSelected'
                    ];
 
 class Bus {
