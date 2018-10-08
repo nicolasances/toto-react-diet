@@ -22,6 +22,7 @@ export default class NewMealScreen extends Component {
       headerTitle: <TotoTitleBar
                       title='New Meal'
                       back={true}
+                      rightButton={{image: require('../../img/clock.png'), navData: {screen: 'MealPreps', data: {}}}}
                       />
     }
   }

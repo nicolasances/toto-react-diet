@@ -3,6 +3,7 @@ import {Text, View, StyleSheet} from 'react-native';
 import * as theme from '../styles/ThemeColors';
 import DietAPI from '../services/DietAPI';
 import TotoFlatList from '../widgets/TotoFlatList';
+import moment from 'moment';
 
 /**
  * Displays the list of prepared meals.
