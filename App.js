@@ -10,6 +10,7 @@ import GroceryDetailScreen from './js/screens/GroceryDetailScreen';
 import NewMealScreen from './js/screens/NewMealScreen';
 import NewMealFoodDetailScreen from './js/screens/NewMealFoodDetailScreen';
 import DateSelectionScreen from './js/screens/DateSelectionScreen';
+import MealPrepsScreen from './js/screens/MealPrepsScreen';
 
 const RootStack = createStackNavigator({
 
@@ -20,6 +21,7 @@ const RootStack = createStackNavigator({
   NewMeal: {screen: NewMealScreen},
   NewMealFoodDetail: {screen: NewMealFoodDetailScreen},
   DateSelection: {screen: DateSelectionScreen},
+  MealPreps: {screen: MealPrepsScreen},
 
 }, {
   initialRouteName: 'Home',
