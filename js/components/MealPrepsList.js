@@ -10,7 +10,7 @@ import moment from 'moment';
  * Needs the following params:
  * - onItemPress          : react to the press of the food
  */
-export default class GroceriesList extends Component {
+export default class MealPrepsList extends Component {
 
   constructor(props) {
     super(props);
