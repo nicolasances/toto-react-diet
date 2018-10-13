@@ -13,7 +13,7 @@ export default class TotoAPI {
 
     // Adding standard headers
     options.headers['Accept'] = 'application/json';
-    options.headers['Authorization'] = 'Basic dG90bzpzdG8=';
+    options.headers['Authorization'] = config.AUTH;
 
     return fetch(config.API_URL + url, options);
   }
