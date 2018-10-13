@@ -8,6 +8,7 @@ import * as theme from '../styles/ThemeColors';
 import * as TotoEventBus from '../services/TotoEventBus';
 import DietAPI from '../services/DietAPI';
 import moment from 'moment';
+import TotoBarChart from '../widgets/TotoBarChart';
 
 const {Group, Shape, Surface} = ART;
 const d3 = {scale, shape, array, path};
@@ -29,7 +30,6 @@ export default class WeeklyStats extends Component {
 
     // Bind the functions that need 'this'
     this.updateState = this.updateState.bind(this);
-    this.createCirclesPath = this.createCirclesPath.bind(this);
   }
 
   // When the component is mounted
@@ -45,7 +45,32 @@ export default class WeeklyStats extends Component {
   /**
    * Updates the state
    */
-  updateState(data) {
+  updateState(mealsStats) {
+
+    if (this.state.dates == null) return;
+
+		// Put the data as an array of {}
+		var data = [];
+		for (var i = 0; i < this.state.dates.length; i++) {
+
+      var day = mealsStats[this.state.dates[i]];
+
+      // If there are meals for that date:
+      if (day != null) {
+
+        let datum = {x: parseInt(this.state.dates[i]), y: day.calories};
+
+        // If the date is today => highlight as temporary
+        if (this.state.dates[i] >= moment().format('YYYYMMDD')) datum.temporary = true;
+
+        // Add the datum
+        data.push(datum);
+      }
+      else {
+        data.push({x: parseInt(this.state.dates[i]), y: 0});
+      }
+		}
+
     this.setState({
       mealsStats: data
     });
@@ -112,75 +137,17 @@ export default class WeeklyStats extends Component {
   }
 
   /**
-   * Returns a shape drawing the provided path
-   */
-  createShape(path) {
-
-    let key = 'WeeklyStatsShape-' + Math.random();
-
-    return (
-      <Shape key={key} d={path} strokeWidth={2} stroke={theme.color().COLOR_ACCENT} />
-    )
-  }
-
-  /**
-   * Creates the circles for each day
-   */
-  createCirclesPath(mealsStats) {
-
-    if (this.state.dates == null) return;
-
-		// Put the data as an array of {}
-		var data = [];
-		for (var i = 0; i < this.state.dates.length; i++) {
-
-      var day = mealsStats[this.state.dates[i]];
-
-      // If there are meals for that date:
-      if (day != null) {
-        data.push(day);
-      }
-		}
-
-		// Create the x and y scales
-		var x = d3.scale.scaleBand().range([this.paddingH + this.calCircleRadius, this.width - this.paddingH - this.calCircleRadius]).padding(0.1).domain([0, 1, 2, 3, 4, 5, 6]);
-		var y = d3.scale.scaleLinear().range([this.height - 32, 32]).domain([0, d3.array.max(data, function(d) {return d.calories})]);
-
-    let circles = [];
-
-    for (let i = 0; i < data.length; i++) {
-      var circle = ART.Path()
-            .move(x(i), y(data[i].calories))
-            .arc(0, 2 * this.calCircleRadius, this.calCircleRadius)
-            .arc(0, -2 * this.calCircleRadius, this.calCircleRadius);
-
-      var shape = this.createShape(circle);
-
-      circles.push(shape);
-
-    }
-
-    return circles;
-
-  }
-
-  /**
    * Renders this component
    */
   render() {
 
-    let circles = this.createCirclesPath(this.state.mealsStats);
-
     return (
       <View>
-        <Surface style={styles.surface} width={this.width} height={this.height}>
-          {circles}
-        </Surface>
+        <TotoBarChart data={this.state.mealsStats} height={250} valueLabelTransform={(value) => value.toFixed(0)} />
       </View>
     )
   }
 }
 
 const styles = StyleSheet.create({
-  surface: {},
 });

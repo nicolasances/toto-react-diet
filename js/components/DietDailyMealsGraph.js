@@ -28,6 +28,7 @@ export default class DietDailyMealsGraph extends Component {
 
     this.height = this.props.height == null ? 250 : this.props.height;
     this.width = window.width;
+    this.adjustBottom = 20;
 
     this.refreshData();
 
