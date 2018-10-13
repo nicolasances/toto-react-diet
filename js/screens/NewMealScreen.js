@@ -153,7 +153,7 @@ export default class NewMealScreen extends Component {
     if (this.state.mealPrepId != null) {
 
       new DietAPI().putMealPrep(this.state.mealPrepId, this.state).then(data => {
-        // TODO: notification
+        TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'The prepared meal has been saved!'}});
       });
     }
     // Else Call the API to crete a new meal prep

@@ -26,9 +26,18 @@ const TotoEvents = [
                      'mealAdded',
 
                      /**
-                      * Event called when a meal prep is selected in the meal prep screen
+                      * 1. A meal prep is selected in the meal prep screen
                       */
-                     'mealPrepSelected'
+                     'mealPrepSelected',
+
+                     /**
+                      * This event is thrown to push notifications using TotoNotification.
+                      * The notification event has a context object: {
+                      *  text: 'the text of the notif'
+                      * }
+                      */
+                     'notification'
+
                    ];
 
 class Bus {
