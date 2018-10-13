@@ -11,6 +11,16 @@ const {Group, Shape, Surface} = ART;
 const d3 = {scale, shape, array, path};
 const window = Dimensions.get('window');
 
+/**
+ * Creates a bar chart
+ * Requires the following:
+ * - data               : the data to create the chart in the following form:
+ *                        [ { x: numeric, x value,
+ *                            y: numeric, y value,
+ *                            temporary: boolean, optional, if true will highlight this element as a temporary one
+ *                          }, {...} ]
+ * - valueLabelTransform : a function, optional, (value) => {transforms the value to be displayed on the bar (top part)}
+ */
 class TotoBarChart extends Component {
 
   /**
