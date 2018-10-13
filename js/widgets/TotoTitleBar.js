@@ -81,7 +81,7 @@ class TotoTitleBar extends Component {
 
       // Create the button
       rightButton = (
-        <TouchableOpacity onPress={() => this.props.navigation.navigate(navData.screen, navData.data)}>
+        <TouchableOpacity onPress={() => this.props.navigation.navigate({routeName: navData.screen, params: navData.data, key: navData.navigationKey})}>
           <Image source={img}  style={{width: 24, height: 24, tintColor: theme.color().COLOR_ACCENT}} />
         </TouchableOpacity>
       )

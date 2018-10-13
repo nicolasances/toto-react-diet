@@ -68,6 +68,36 @@ export default class DietAPI {
   }
 
   /**
+   * Updates the specified meal prep.
+   * Requires:
+   * - id: the id of the meal prep to update
+   * - meal: the data to update
+   */
+  putMealPrep(id, meal) {
+
+    let data = {
+      date: meal.mealDate,
+      time: meal.mealTime,
+      calories: meal.calories,
+      fat: meal.fat,
+      carbs: meal.carbs,
+      sugars: meal.sugars,
+      proteins: meal.proteins,
+      aliments: meal.foods
+    };
+
+    // Post the data
+    return new TotoAPI().fetch('/diet/mealPreps/' + id, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }).then((response => response.json()));
+
+  }
+
+  /**
    * Retrieves the meals for the current day
    */
   getTodayMeals() {

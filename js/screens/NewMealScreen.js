@@ -17,12 +17,26 @@ export default class NewMealScreen extends Component {
   // Define the Navigation options
   static navigationOptions = ({navigation}) => {
 
+    let navigationKey = 'NewMeal-' + Math.random();
+
     return {
       headerLeft: null,
       headerTitle: <TotoTitleBar
                       title='New Meal'
                       back={true}
-                      rightButton={{image: require('../../img/clock.png'), navData: {screen: 'MealPreps', data: {}}}}
+                      rightButton={{
+                        image: require('../../img/clock.png'),
+                        navData: {
+                          screen: 'MealPreps',
+                          navigationKey: navigationKey,
+                          data: {
+                            selectionMode: {
+                              active: true,
+                              referer: navigationKey
+                            }
+                          }
+                        }
+                      }}
                       />
     }
   }
@@ -39,6 +53,7 @@ export default class NewMealScreen extends Component {
       carbs: 0,
       proteins: 0,
       fat: 0,
+      sugars: 0,
       calories: 0,
       foods: []
     }
@@ -51,6 +66,7 @@ export default class NewMealScreen extends Component {
     this.onDateChanged = this.onDateChanged.bind(this);
     this.save = this.save.bind(this);
     this.saveAsPrep = this.saveAsPrep.bind(this);
+    this.onMealPrepSelected = this.onMealPrepSelected.bind(this);
   }
 
   /**
@@ -61,6 +77,7 @@ export default class NewMealScreen extends Component {
     TotoEventBus.bus.subscribeToEvent('grocerySelected', this.onFoodSelected);
     TotoEventBus.bus.subscribeToEvent('foodAmountInMealChanged', this.onFoodAmountChanged);
     TotoEventBus.bus.subscribeToEvent('newMealTimeChanged', this.onDateChanged);
+    TotoEventBus.bus.subscribeToEvent('mealPrepSelected', this.onMealPrepSelected);
   }
 
   /**
@@ -70,6 +87,33 @@ export default class NewMealScreen extends Component {
     TotoEventBus.bus.unsubscribeToEvent('grocerySelected', this.onFoodSelected);
     TotoEventBus.bus.unsubscribeToEvent('foodAmountInMealChanged', this.onFoodAmountChanged);
     TotoEventBus.bus.unsubscribeToEvent('newMealTimeChanged', this.onDateChanged);
+    TotoEventBus.bus.unsubscribeToEvent('mealPrepSelected', this.onMealPrepSelected);
+  }
+
+  /**
+   * Reacts to the selection of a meal prep.
+   * It loads the meal prep, replacing the current meal.
+   */
+  onMealPrepSelected(event) {
+
+    // First clear the foods:
+    this.setState({
+      foods: []
+    }, () => {
+      // Then Update the state object
+      this.setState({
+        mealPrepId: event.context.meal.id,
+        mealTime: event.context.meal.time,
+        mealDateFormatted: moment(event.context.meal.date, 'YYYYMMDD').format('ddd DD MMM YYYY'),
+        mealDate: event.context.meal.date,
+        carbs: event.context.meal.carbs,
+        proteins: event.context.meal.proteins,
+        fat: event.context.meal.fat,
+        calories: event.context.meal.calories,
+        sugars: event.context.meal.sugars,
+        foods: event.context.meal.aliments
+      })
+    })
   }
 
   /**
@@ -105,12 +149,20 @@ export default class NewMealScreen extends Component {
    */
   saveAsPrep() {
 
-    // Call the API
-    new DietAPI().postMealPrep(this.state).then(data => {
+    // If the meal prep was already saved, we just update it
+    if (this.state.mealPrepId != null) {
 
-      // Go back
-      this.props.navigation.goBack();
-    });
+      new DietAPI().putMealPrep(this.state.mealPrepId, this.state).then(data => {
+        // TODO: notification
+      });
+    }
+    // Else Call the API to crete a new meal prep
+    else {
+
+      new DietAPI().postMealPrep(this.state).then(data => {
+        // TODO: notification
+      });
+    }
   }
 
   /**
@@ -223,8 +275,6 @@ export default class NewMealScreen extends Component {
    */
   foodDataExtractor(item) {
 
-    console.log(item.item);
-
     // Define the amount to show on the left
     let amount;
     if (item.item.amountGr != null) amount = item.item.amountGr;
@@ -252,6 +302,17 @@ export default class NewMealScreen extends Component {
 
   // Render this screen
   render() {
+
+    // Text warning that it's a meal prep loaded
+    let mealPrepText;
+
+    if (this.state.mealPrepId != null) {
+      mealPrepText = (
+        <View style={styles.mealPrepTextContainer}>
+          <Text style={styles.mealPrepText}>Loaded from a prepared meal</Text>
+        </View>
+      )
+    }
 
     return (
 
@@ -281,6 +342,8 @@ export default class NewMealScreen extends Component {
           <TotoMacro value={this.state.fat} label='Fat' />
         </View>
 
+        {mealPrepText}
+
         <View style={styles.buttonsContainer}>
             <TotoIconButton
               image={require('../../img/add.png')}
@@ -291,7 +354,7 @@ export default class NewMealScreen extends Component {
               label='Save'
               onPress={this.save} />
             <TotoIconButton
-              image={require('../../img/clock.png')}
+              image={require('../../img/db-check.png')}
               label='Save as prep'
               onPress={this.saveAsPrep} />
         </View>
@@ -351,5 +414,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  mealPrepTextContainer: {
+    paddingVertical: 12,
+    alignItems: 'center'
+  },
+  mealPrepText: {
+    fontSize: 14,
+    color: theme.color().COLOR_ACCENT,
   },
 });

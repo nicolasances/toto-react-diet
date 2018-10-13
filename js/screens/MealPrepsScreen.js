@@ -8,7 +8,9 @@ import * as TotoEventBus from '../services/TotoEventBus';
 /**
  * Shows the list of prepared meals
  * Accepts the following NAVIGATION PARAMS:
- * - onItemPress          :  a callback to be called when the item is pressed
+ * - selectionMode          :  an object that specifies if the selection mode is active of the meal and provide required additional params:
+ *                            { active : true/false,
+ *                              referer : the name of the referer screen as registered in the Route provider }
  */
 export default class MealPrepsScreen extends Component<Props> {
 
@@ -29,6 +31,23 @@ export default class MealPrepsScreen extends Component<Props> {
 
     this.selectionMode = this.props.navigation.getParam('selectionMode');
 
+    this.onItemPress = this.onItemPress.bind(this);
+  }
+
+  /**
+   * Function to be called when an item of the grocery list is pressed
+   */
+  onItemPress(item) {
+
+    // Throw an event on the item press
+    TotoEventBus.bus.publishEvent({name: 'mealPrepSelected', context: {meal: item.item}});
+
+    // Based on the selection mode, eventually go back
+    let selectionMode = this.props.navigation.getParam('selectionMode');
+
+    if (selectionMode == null || !selectionMode.active) return;
+
+    this.props.navigation.goBack(selectionMode.referer);
   }
 
   /**
@@ -38,7 +57,7 @@ export default class MealPrepsScreen extends Component<Props> {
     return (
       <View style={styles.container}>
 
-        <MealPrepsList onItemPress={this.props.onItemPress}/>
+        <MealPrepsList onItemPress={this.onItemPress}/>
 
       </View>
     );

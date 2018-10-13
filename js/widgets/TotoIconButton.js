@@ -39,13 +39,13 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: theme.color().COLOR_ACCENT,
     borderRadius: 30,
-    width: 60,
-    height: 60,
+    width: 48,
+    height: 48,
     marginHorizontal: 6,
   },
   image: {
     tintColor: theme.color().COLOR_ACCENT,
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
   },
 });
