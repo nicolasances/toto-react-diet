@@ -67,6 +67,7 @@ export default class NewMealScreen extends Component {
     this.save = this.save.bind(this);
     this.saveAsPrep = this.saveAsPrep.bind(this);
     this.onMealPrepSelected = this.onMealPrepSelected.bind(this);
+    this.deleteMealPrep = this.deleteMealPrep.bind(this);
   }
 
   /**
@@ -117,6 +118,24 @@ export default class NewMealScreen extends Component {
   }
 
   /**
+   * Method to clean the state and reset it
+   */
+  cleanState() {
+    this.setState({
+      mealPrepId: null,
+      mealTime: moment().format('HH:mm'),
+      mealDateFormatted: moment().format('ddd DD MMM YYYY'),
+      mealDate: moment().format('YYYYMMDD'),
+      carbs: 0,
+      proteins: 0,
+      fat: 0,
+      sugars: 0,
+      calories: 0,
+      foods: []
+    });
+  }
+
+  /**
    * Called when the date of the meal is changed
    */
   onDateChanged(event) {
@@ -142,6 +161,11 @@ export default class NewMealScreen extends Component {
       // Go back
       this.props.navigation.goBack();
     });
+
+    // If the meal was a meal prep, delete it
+    if (this.state.mealPrepId != null) {
+      new DietAPI().deleteMealPrep(this.state.mealPrepId);
+    }
   }
 
   /**
@@ -160,7 +184,13 @@ export default class NewMealScreen extends Component {
     else {
 
       new DietAPI().postMealPrep(this.state).then(data => {
-        // TODO: notification
+        // Publish event
+        TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'The prepared meal has been saved!'}});
+
+        // Update the state with the new meal prep id
+        this.setState({
+          mealPrepId: data.id
+        })
       });
     }
   }
@@ -271,6 +301,27 @@ export default class NewMealScreen extends Component {
   }
 
   /**
+   * Deletes this  meal prep
+   */
+  deleteMealPrep() {
+
+    // If there's no id
+    if (this.state.mealPrepId == null) return;
+
+    // Delete the meal prep
+    new DietAPI().deleteMealPrep(this.state.mealPrepId).then((response) => {
+
+      // Notify that the meal prep has been deleted
+      TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'The prepared meal has been deleted!'}});
+
+      // Clear the state
+      this.cleanState();
+
+    });
+
+  }
+
+  /**
    * Extracts the data for each of the added aliments
    */
   foodDataExtractor(item) {
@@ -306,11 +357,44 @@ export default class NewMealScreen extends Component {
     // Text warning that it's a meal prep loaded
     let mealPrepText;
 
+    // Buttons
+    let mealPrepDeleteButton;
+    let saveButton;
+    let saveMealPrepButton;
+
+    // If a prepared meal has been loaded
     if (this.state.mealPrepId != null) {
+
+      // Set the text that warns that it's a prepared meal
       mealPrepText = (
         <View style={styles.mealPrepTextContainer}>
           <Text style={styles.mealPrepText}>Loaded from a prepared meal</Text>
         </View>
+      )
+
+      // Enable the delete meal prep button
+      mealPrepDeleteButton = (
+        <TotoIconButton
+          image={require('../../img/trash.png')}
+          label='Delete'
+          onPress={this.deleteMealPrep} />
+      )
+    }
+
+    // Activate the save buttons if the meal has some calories
+    if (this.state.calories > 0) {
+      saveButton = (
+        <TotoIconButton
+          image={require('../../img/tick.png')}
+          label='Save'
+          onPress={this.save} />
+      );
+
+      saveMealPrepButton = (
+        <TotoIconButton
+        image={require('../../img/db-check.png')}
+        label='Save as prep'
+        onPress={this.saveAsPrep} />
       )
     }
 
@@ -349,14 +433,9 @@ export default class NewMealScreen extends Component {
               image={require('../../img/add.png')}
               label='Add some food'
               onPress={this.onPressAddFood} />
-            <TotoIconButton
-              image={require('../../img/tick.png')}
-              label='Save'
-              onPress={this.save} />
-            <TotoIconButton
-              image={require('../../img/db-check.png')}
-              label='Save as prep'
-              onPress={this.saveAsPrep} />
+            {saveButton}
+            {saveMealPrepButton}
+            {mealPrepDeleteButton}
         </View>
 
         <View style={styles.alimentsContainer}>

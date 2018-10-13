@@ -98,6 +98,16 @@ export default class DietAPI {
   }
 
   /**
+   * Deletes the specified Meal Prep
+   */
+  deleteMealPrep(id) {
+
+    return new TotoAPI().fetch('/diet/mealPreps/' + id, {
+      method: 'DELETE'
+    });
+  }
+
+  /**
    * Retrieves the meals for the current day
    */
   getTodayMeals() {
