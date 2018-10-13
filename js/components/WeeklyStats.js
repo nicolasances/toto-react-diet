@@ -1,18 +1,9 @@
 import React, {Component} from 'react';
-import {View, Text, ART, Dimensions, StyleSheet} from 'react-native';
-import * as scale from 'd3-scale';
-import * as shape from 'd3-shape';
-import * as array from 'd3-array';
-import * as path from 'd3-path';
-import * as theme from '../styles/ThemeColors';
+import {View, Text, StyleSheet} from 'react-native';
 import * as TotoEventBus from '../services/TotoEventBus';
 import DietAPI from '../services/DietAPI';
-import moment from 'moment';
 import TotoBarChart from '../widgets/TotoBarChart';
-
-const {Group, Shape, Surface} = ART;
-const d3 = {scale, shape, array, path};
-const window = Dimensions.get('window');
+import moment from 'moment';
 
 export default class WeeklyStats extends Component {
 
@@ -20,9 +11,6 @@ export default class WeeklyStats extends Component {
     super(props);
 
     this.height = props.height == null ? 250 : props.height;
-    this.width = window.width;
-    this.calCircleRadius = 15;
-    this.paddingH = 12;
 
     this.state = {
       mealsStats: []
@@ -30,6 +18,8 @@ export default class WeeklyStats extends Component {
 
     // Bind the functions that need 'this'
     this.updateState = this.updateState.bind(this);
+    this.onMealAdded = this.onMealAdded.bind(this);
+    this.loadData = this.loadData.bind(this);
   }
 
   // When the component is mounted
@@ -40,6 +30,25 @@ export default class WeeklyStats extends Component {
 
     // Load the data
     this.loadData();
+
+    // Subscribe to relevant events
+    TotoEventBus.bus.subscribeToEvent('mealAdded', this.onMealAdded);
+  }
+
+  /**
+   * Unmount the component
+   */
+  componentWillUnmount() {
+    // Unsubscribe to relevant events
+    TotoEventBus.bus.unsubscribeToEvent('mealAdded', this.onMealAdded);
+  }
+
+  /**
+   * React to the meal added event
+   */
+  onMealAdded(event) {
+
+    this.setState({mealStats: null}, () => {this.loadData()});
   }
 
   /**
