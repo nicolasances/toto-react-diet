@@ -14,6 +14,7 @@ export default class TotoNotification extends Component {
     this.state = {
       topAnimated: new Animated.Value(window.height),
       top: window.height,
+      text: null,
     }
 
     // Define the height of the popup
@@ -22,6 +23,7 @@ export default class TotoNotification extends Component {
     // Bind functions to this
     this.calculateHeight = this.calculateHeight.bind(this);
     this.hideNotification = this.hideNotification.bind(this);
+    this.onNotification = this.onNotification.bind(this);
   }
 
   /**
@@ -32,34 +34,35 @@ export default class TotoNotification extends Component {
     this.state.topAnimated.addListener((progress) => {
       this.setState({top: progress.value});
     });
+
+    // Subscribe to events
+    TotoEventBus.bus.subscribeToEvent('notification', this.onNotification);
   }
 
   /**
-   * React to props change
+   * When the title bar is unmounted
    */
-  componentWillReceiveProps(props) {
+  componentWillUnmount() {
+    // Unsubscribe to the events
+    TotoEventBus.bus.unsubscribeToEvent('notification', this.onNotification);
+  }
 
-    if (props.text == null) return;
+  /**
+   * React to receiving notifications
+   */
+  onNotification(event) {
+
+    this.setState({
+      text: event.context.text
+    });
 
     // Animate the bottom property of the notification to make the SLIDE IN effect
     Animated.timing(this.state.topAnimated, {
       toValue: window.height - this.height,
-      easing: Easing.bouncing,
+      easing: Easing.linear,
       duration: 100,
     }).start(this.hideNotification);
-  }
 
-  /**
-   * Starts the animation to show the notification
-   * by sliding it in
-   */
-  showNotification() {
-    // Animate the top property of the notification to make the SLIDE IN effect
-    Animated.timing(this.state.topAnimated, {
-      toValue: window.height - this.height,
-      easing: Easing.bouncing,
-      duration: 100,
-    }).start(this.hideNotification)
   }
 
   /**
@@ -73,8 +76,12 @@ export default class TotoNotification extends Component {
       toValue: window.height,
       delay: this.props.persistentTime == null ? 1500 : this.props.persistentTime,
       easing: Easing.linear,
-      duration: 100,
-    }).start();
+      duration: 300,
+    }).start(() => {
+      this.setState({
+        text: null
+      })
+    });
   }
 
   /**
@@ -91,7 +98,7 @@ export default class TotoNotification extends Component {
    */
   render() {
 
-    if (this.props.text == null) return (
+    if (this.state.text == null) return (
       <View></View>
     )
 
@@ -108,7 +115,7 @@ export default class TotoNotification extends Component {
 
       <View style={animatedStyles} onLayout={(event) => this.calculateHeight(event)}>
         <View style={styles.notificationContainer}>
-          <Text style={styles.text}>{this.props.text}</Text>
+          <Text style={styles.text}>{this.state.text}</Text>
         </View>
       </View>
     )
@@ -118,7 +125,7 @@ export default class TotoNotification extends Component {
 
 const styles = StyleSheet.create({
   notificationContainer: {
-    backgroundColor: theme.color().COLOR_THEME_DARK,
+    backgroundColor: theme.color().COLOR_ACCENT_LIGHT,
     padding: 12,
     marginHorizontal: 6,
     flex: 1,
@@ -130,6 +137,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
-    color: theme.color().COLOR_ACCENT
+    color: theme.color().COLOR_TEXT
   }
 })

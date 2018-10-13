@@ -3,7 +3,6 @@ import {View, TouchableOpacity, Image, Text, StyleSheet} from 'react-native';
 import { withNavigation } from 'react-navigation';
 import * as theme from '../styles/ThemeColors';
 import TotoNotification from './TotoNotification';
-import * as TotoEventBus from '../services/TotoEventBus';
 
 /**
  * Title bar for Toto.
@@ -29,36 +28,6 @@ class TotoTitleBar extends Component {
     this.state = {
       notificationText: null
     }
-
-    // Bind functions to this
-    this.onNotification = this.onNotification.bind(this);
-  }
-
-  /**
-   * When the title bar is mounted
-   */
-  componentDidMount() {
-    // Subscribe to events
-    TotoEventBus.bus.subscribeToEvent('notification', this.onNotification);
-  }
-
-  /**
-   * When the title bar is unmounted
-   */
-  componentWillUnmount() {
-    // Unsubscribe to the events
-    TotoEventBus.bus.unsubscribeToEvent('notification', this.onNotification);
-  }
-
-  /**
-   * React to receiving notifications
-   */
-  onNotification(event) {
-
-    this.setState({
-      notificationText: event.context.text
-    });
-
   }
 
   /**
@@ -141,7 +110,7 @@ class TotoTitleBar extends Component {
         {title}
         {rightButton}
 
-        <TotoNotification text={this.state.notificationText} />
+        <TotoNotification />
 
       </View>
     );
