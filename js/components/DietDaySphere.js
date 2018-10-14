@@ -25,7 +25,7 @@ export default class DietDaySphere extends Component {
     this.radius = this.props.radius == null ? 80 : this.props.radius;
     this.radiusWidth = 12;
     this.firstAnimationSpeed = 1500;
-    this.stdAnimationSpeed = 800;
+    this.stdAnimationSpeed = 500;
 
     this.state = {
       caloriesProgress: 0,
