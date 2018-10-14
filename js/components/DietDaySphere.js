@@ -132,13 +132,14 @@ export default class DietDaySphere extends Component {
           calories += data.meals[i].calories;
         }
 
+        // Update the state
+        this.setState({calories: calories});
+
         // Calculate the progress and start the animation
         var caloriesProgress = calories * 360 / this.state.caloriesGoal;
 
-        this.setState({
-          caloriesProgress: caloriesProgress,
-          calories: calories
-        });
+        // Animate
+        this.animate(caloriesProgress, this.stdAnimationSpeed, Easing.linear);
 
       });
   }
