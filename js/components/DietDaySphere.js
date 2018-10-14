@@ -25,7 +25,7 @@ export default class DietDaySphere extends Component {
     this.radius = this.props.radius == null ? 80 : this.props.radius;
     this.radiusWidth = 12;
     this.firstAnimationSpeed = 1500;
-    this.stdAnimationSpeed = 500;
+    this.stdAnimationSpeed = 300;
 
     this.state = {
       caloriesProgress: 0,
@@ -109,6 +109,8 @@ export default class DietDaySphere extends Component {
     // Recalculate the progress
     var caloriesProgress = this.state.calories * 360 / parseInt(goal.calories);
 
+    if (caloriesProgress > 360) caloriesProgress = 360;
+
     // Animate
     this.animate(caloriesProgress, this.stdAnimationSpeed, Easing.linear);
 
@@ -138,6 +140,8 @@ export default class DietDaySphere extends Component {
         // Calculate the progress and start the animation
         var caloriesProgress = calories * 360 / this.state.caloriesGoal;
 
+        if (caloriesProgress > 360) caloriesProgress = 360;
+
         // Animate
         this.animate(caloriesProgress, this.stdAnimationSpeed, Easing.linear);
 
@@ -163,6 +167,8 @@ export default class DietDaySphere extends Component {
 
       // Calculate the progress and start the animation
       var caloriesProgress = calories * 360 / this.state.caloriesGoal;
+
+      if (caloriesProgress > 360) caloriesProgress = 360;
 
       // Define the animation properties based on the moment:
       //  - if it's the first load, then do a slow bounce animation
