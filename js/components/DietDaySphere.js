@@ -110,10 +110,7 @@ export default class DietDaySphere extends Component {
     var caloriesProgress = this.state.calories * 360 / parseInt(goal.calories);
 
     // Animate
-    var ease = Easing.inOut;
-    var speed = this.stdAnimationSpeed;
-
-    this.animate(caloriesProgress, 1000, Easing.linear);
+    this.animate(caloriesProgress, this.stdAnimationSpeed, Easing.linear);
 
   }
 
