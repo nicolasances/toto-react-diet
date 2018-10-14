@@ -36,7 +36,14 @@ const TotoEvents = [
                       *  text: 'the text of the notif'
                       * }
                       */
-                     'notification'
+                     'notification',
+
+                     /**
+                      * This event is thrown when a new dietary goal is set
+                      * Provides a context with the following object:
+                      * { goal: {calories: 'the new calories goal'} }
+                      */
+                     'goalSet'
 
                    ];
 

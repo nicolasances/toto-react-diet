@@ -28,15 +28,22 @@ export default class DietDaySphere extends Component {
     this.stdAnimationSpeed = 800;
 
     this.state = {
-      caloriesProgress: new Animated.Value(0),
+      caloriesProgress: 0,
+      caloriesProgressAnimated: new Animated.Value(0),
       calories: 0,
       caloriesGoal: 3000
     }
 
-    this.loadCalories();
+    // Animation listener to update the actual value with the animation
+    this.state.caloriesProgressAnimated.addListener((progress) => {
+      this.setState({caloriesProgress: progress.value});
+    });
 
     // Bind this
     this.mealAdded = this.mealAdded.bind(this);
+    this.loadGoal = this.loadGoal.bind(this);
+    this.loadCalories = this.loadCalories.bind(this);
+    this.onGoalReset = this.onGoalReset.bind(this);
 
   }
 
@@ -44,14 +51,70 @@ export default class DietDaySphere extends Component {
    * When mounting
    */
   componentDidMount() {
+    // Subscribe to relevant events
     TotoEventBus.bus.subscribeToEvent('mealAdded', this.mealAdded);
+    TotoEventBus.bus.subscribeToEvent('goalSet', this.onGoalReset);
+
+    // Load the data
+    this.loadGoal().then(this.loadCalories);
   }
 
   /**
   * When unmounting
   */
   componentWillUnmount() {
+    // Unsubscribe to events
     TotoEventBus.bus.unsubscribeToEvent('mealAdded', this.mealAdded);
+    TotoEventBus.bus.unsubscribeToEvent('goalSet', this.onGoalReset);
+  }
+
+  /**
+   * Loads the goal
+   */
+  loadGoal() {
+
+    return new Promise((success, failure) => {
+
+      new DietAPI().getGoal().then((data) => {
+
+        // If there's no goal set, set it to a default of 3000
+        if (data == null || data.id == null) {
+          this.setState({caloriesGoal: 3000});
+        }
+        // Otherwise set it to the set goal
+        else {
+          this.setState({caloriesGoal: parseInt(data.calories)});
+        }
+
+        success();
+
+      });
+    });
+  }
+
+  /**
+   * React when the calories goal is changed
+   */
+  onGoalReset(event) {
+
+    if (event == null || event.context == null || event.context.goal == null) return;
+
+    let goal = event.context.goal;
+
+    // Set the state
+    this.setState({
+      caloriesGoal: parseInt(goal.calories)
+    })
+
+    // Recalculate the progress
+    var caloriesProgress = this.state.calories * 360 / parseInt(goal.calories);
+
+    // Animate
+    var ease = Easing.inOut;
+    var speed = this.stdAnimationSpeed;
+
+    this.animate(caloriesProgress, 1000, Easing.linear);
+
   }
 
   /**
@@ -109,7 +172,6 @@ export default class DietDaySphere extends Component {
       var ease = this.state.calories == 0 ? Easing.bounce : Easing.inOut;
       var speed = this.state.calories == 0 ? this.firstAnimationSpeed : this.stdAnimationSpeed;
 
-
       this.animate(caloriesProgress, speed, ease);
 
       // Set the calories and the progress compared to the goal
@@ -122,7 +184,7 @@ export default class DietDaySphere extends Component {
 
   animate(toVal, dur, ease) {
 
-    Animated.timing(this.state.caloriesProgress, {
+    Animated.timing(this.state.caloriesProgressAnimated, {
       toValue: toVal,
       easing: ease,
       duration: dur,
@@ -139,7 +201,7 @@ export default class DietDaySphere extends Component {
 
         <View style={{position: 'absolute', width: this.width, height: this.height, alignItems: 'center', justifyContent: 'center'}}>
           <AnimateNumber style={styles.caloriesCounter} value={this.state.calories} formatter={(val) => {return val.toFixed(0)}}/>
-          <Text style={styles.calLabel}>cal.</Text>
+          <Text style={styles.calLabel}>cal</Text>
         </View>
 
       </TouchableOpacity>

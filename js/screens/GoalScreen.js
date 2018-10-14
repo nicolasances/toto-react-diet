@@ -78,7 +78,11 @@ export default class GoalScreen extends Component<Props> {
         // Send a notification
         TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'Your new goal has been set!'}});
 
-        // TODO : send an event to notify that a new goal has been set
+        // Send an event to notify that a new goal has been set
+        TotoEventBus.bus.publishEvent({name: 'goalSet', context: {goal: this.state.goal}});
+
+        // Go back to the previous page
+        this.props.navigation.goBack();
       });
     }
     // Otherwise update the previous goal
@@ -90,7 +94,11 @@ export default class GoalScreen extends Component<Props> {
         // Send a notification
         TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'Your new goal has been set!'}});
 
-        // TODO : send an event to notify that a new goal has been set
+        // Send an event to notify that a new goal has been set
+        TotoEventBus.bus.publishEvent({name: 'goalSet', context: {goal: this.state.goal}});
+
+        // Go back to the previous page
+        this.props.navigation.goBack();
       });
     }
 
@@ -170,7 +178,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   date: {
-    fontSize: 16,
+    fontSize: 18,
     color: theme.color().COLOR_TEXT
   },
   inputValue: {
@@ -183,7 +191,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
-    fontSize: 20
+    fontSize: 22
   },
   buttonsContainer: {
     flex: 1,
