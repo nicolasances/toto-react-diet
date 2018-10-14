@@ -16,12 +16,22 @@ export default class GroceriesScreen extends Component<Props> {
 
   // Define the Navigation options
   static navigationOptions = ({navigation}) => {
+
     return {
       headerLeft: null,
       headerTitle: <TotoTitleBar
                       title={navigation.getParam('categoryName')}
                       back={true}
-                      rightButton={{image: require('../../img/add.png'), navData: {screen: '', data: {}}}}
+                      rightButton={
+                        { image: require('../../img/add.png'),
+                          navData: {
+                            screen: 'GroceryDetail',
+                            data: {
+                              categoryId: navigation.getParam('category')
+                            }
+                          }
+                        }
+                      }
                       />
 
     }

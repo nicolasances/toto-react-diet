@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, View, Text, Image, ART, Dimensions, Animated, Easing } from 'react-native';
+import {Keyboard, StyleSheet, View, Text, Image, ART, Dimensions, Animated, Easing, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
 import * as scale from 'd3-scale';
 import * as shape from 'd3-shape';
 import * as array from 'd3-array';
@@ -8,8 +8,10 @@ import * as path from 'd3-path';
 import * as theme from '../styles/ThemeColors';
 import TotoTitleBar from '../widgets/TotoTitleBar';
 import DietAPI from '../services/DietAPI';
+import * as TotoEventBus from '../services/TotoEventBus';
 import TotoCircleValue from '../widgets/TotoCircleValue';
 import TotoMacro from '../widgets/TotoMacro';
+import TotoIconButton from '../widgets/TotoIconButton';
 
 const {Group, Shape, Surface} = ART;
 const d3 = {scale, shape, array, path};
@@ -18,15 +20,34 @@ const window = Dimensions.get('window');
 // Horizontal padding to be applied
 const paddingH = 12;
 
+/**
+ * This screen is used both to:
+ *  - display the details of a specific food
+ *  - create a new food
+ */
 export default class GroceryDetailScreen extends Component {
 
   // Define the Navigation options
   static navigationOptions = ({navigation}) => {
 
+    // Define the title based on what this window is for
+    let title;
+
+    // If no grocery is passed, it means I'm trying to create a new food
+    if (navigation.getParam('grocery') == null) {
+      // Set the title to 'New food'
+      title = 'New food'
+    }
+    // otherwise I'm looking at the detail of the food
+    else {
+      // Set the title to the food name
+      title = navigation.getParam('grocery').name;
+    }
+
     return {
       headerLeft: null,
       headerTitle: <TotoTitleBar
-                      title={navigation.getParam('grocery').name}
+                      title={title}
                       back={true}
                       />
     }
@@ -37,8 +58,11 @@ export default class GroceryDetailScreen extends Component {
 
     super(props);
 
-    // Set the width
-    this.width = window.width;
+    // Get the passed grocery, if any
+    this.grocery = this.props.navigation.getParam('grocery');
+
+    // Get the category of food from the data passed in the nevigation
+    let categoryId = this.grocery != null ? this.grocery.category : this.props.navigation.getParam('categoryId');
 
     // Save the food in the state object
     this.state = {
@@ -46,11 +70,23 @@ export default class GroceryDetailScreen extends Component {
         carbs: 0,
         fat: 0,
         proteins: 0,
-        calories: 0
+        calories: 0,
+        sugars: 0,
+        category: categoryId
       },
-      category: new DietAPI().getGroceryCategory(this.props.navigation.getParam('grocery').category),
+      category: new DietAPI().getGroceryCategory(categoryId),
       sugarAnimatedValue: new Animated.Value(0)
     };
+
+    // Bind to this
+    this.onChangeName = this.onChangeName.bind(this);
+    this.onChangeCalories = this.onChangeCalories.bind(this);
+    this.onChangeFat = this.onChangeFat.bind(this);
+    this.onChangeCarbs = this.onChangeCarbs.bind(this);
+    this.onChangeProteins = this.onChangeProteins.bind(this);
+    this.onChangeSugar = this.onChangeSugar.bind(this);
+    this.onOk = this.onOk.bind(this);
+    this.onDelete = this.onDelete.bind(this);
   }
 
   /**
@@ -58,9 +94,15 @@ export default class GroceryDetailScreen extends Component {
    */
   componentDidMount() {
 
-    this.setState({
-      food: this.props.navigation.getParam('grocery')
-    }, () => {this.animateSugarBar(this.state.food.sugars, 1000, Easing.bounce);});
+    // If this screen shows the detail of a food (grocery)
+    if (this.grocery) {
+      // Set the state
+      this.setState({
+        food: this.grocery
+      },
+      // and animate the sugar bar
+      () => {this.animateSugarBar(this.state.food.sugars, 1000, Easing.bounce);});
+    }
   }
 
   /**
@@ -77,12 +119,202 @@ export default class GroceryDetailScreen extends Component {
   }
 
   /**
+   * When the name of the food is changed
+   */
+  onChangeName(text) {
+
+    if (text == '' || text == null) return;
+
+    this.setState(prevState => ({
+      food: {
+        ...prevState.food,
+        name: text
+      }
+    }))
+  }
+
+  /**
+  * When the fat of the food is changed
+  */
+  onChangeFat(text) {
+
+    if (text == '' || text == null) return;
+
+    // Update the state
+    this.setState(prevState => ({
+      changed: true,
+      food: {
+        ...prevState.food,
+        fat: parseFloat(text)
+      }
+    }));
+
+  }
+
+  /**
+  * When the carbs of the food is changed
+  */
+  onChangeCarbs(text) {
+
+    if (text == '' || text == null) return;
+
+    // Update the state
+    this.setState(prevState => ({
+      changed: true,
+      food: {
+        ...prevState.food,
+        carbs: parseFloat(text)
+      }
+    }));
+  }
+
+  /**
+  * When the proteins of the food is changed
+  */
+  onChangeProteins(text) {
+
+    if (text == '' || text == null) return;
+
+    // Update the state
+    this.setState(prevState => ({
+      changed: true,
+      food: {
+        ...prevState.food,
+        proteins: parseFloat(text)
+      }
+    }));
+  }
+
+  /**
+  * When the proteins of the food is changed
+  */
+  onChangeSugar(text) {
+
+    if (text == '' || text == null) return;
+
+    // Update the state
+    this.setState(prevState => ({
+      changed: true,
+      food: {
+        ...prevState.food,
+        sugars: parseFloat(text)
+      }
+    }));
+  }
+
+  /**
+  * When the calories of the food is changed
+  */
+  onChangeCalories(text) {
+
+    if (text == '' || text == null) return;
+
+    // Update the state
+    this.setState(prevState => ({
+      changed: true,
+      food: {
+        ...prevState.food,
+        calories: parseFloat(text)
+      }
+    }));
+  }
+
+  /**
+   * Saves the new food or update the existing one
+   */
+  onOk() {
+
+    // Create a new food
+    if (this.grocery == null) {
+
+      new DietAPI().postFood(this.state.food).then((data) => {
+        // Send a notification
+        TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'You added ' + this.state.food.name + '!'}});
+
+        // Send a new food created event
+        TotoEventBus.bus.publishEvent({name: 'newFoodCreated', context: {food: this.state.food}});
+
+        // Go back
+        this.props.navigation.goBack();
+      });
+    }
+    // Update the existing one
+    else {
+
+      new DietAPI().putFood(this.grocery.id, this.state.food).then((data) => {
+        // Send a notification
+        TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'You updated ' + this.state.food.name + '!'}});
+
+        // Send a new food created event
+        TotoEventBus.bus.publishEvent({name: 'foodUpdated', context: {food: this.state.food}});
+
+        // Go back
+        this.props.navigation.goBack();
+      });
+    }
+
+  }
+
+  /**
+   * Deletes this food
+   */
+  onDelete() {
+
+    // Delete the food
+    new DietAPI().deleteFood(this.grocery.id);
+
+    // Send a notification
+    TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'You deleted ' + this.state.food.name + '!'}});
+
+    // Send a delete food event
+    TotoEventBus.bus.publishEvent({name: 'foodDeleted', context: {food: this.state.food}});
+
+    // Go back
+    this.props.navigation.goBack();
+  }
+
+  /**
    * Render the screen
    */
   render() {
 
+    // If we're creating a new food, create an input text to set the name of the food
+    let nameTextInput;
+
+    if (this.grocery == null) {
+
+      // Define the name text input
+      nameTextInput = (
+        <View style={styles.nameTextInputContainer}>
+          <TextInput
+            style={styles.nameTextInput}
+            onChangeText={this.onChangeName}
+            keyboardType='default'
+            autoCapitalize='sentences'
+            placeholder='Food name'
+            placeholderTextColor={theme.color().COLOR_TEXT + '50'} />
+        </View>
+      )
+    }
+
+    // Define the save button
+    let saveButton;
+
+    if (this.grocery == null || this.state.changed) {
+
+      saveButton = (
+        <TotoIconButton
+            image={require('../../img/tick.png')}
+            label='Confirm'
+            onPress={this.onOk} />
+      )
+    }
+
     return (
-      <View style={styles.container}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView style={styles.container} behavior='height'>
+
+        {nameTextInput}
 
         <View style={styles.categoryContainer}>
           <Image source={this.state.category.image}  style={{width: 48, height: 48, tintColor: theme.color().COLOR_TEXT}} />
@@ -90,11 +322,10 @@ export default class GroceryDetailScreen extends Component {
         </View>
 
         <View style={styles.macrosContainer}>
-
-          <TotoMacro value={this.state.food.carbs} label='Carbs' />
-          <TotoMacro value={this.state.food.proteins} label='Proteins' />
-          <TotoMacro value={this.state.food.fat} label='Fat' />
-
+          <TotoMacro value={this.state.food.carbs} label='Carbs' input={true} onChangeText={this.onChangeCarbs} />
+          <TotoMacro value={this.state.food.proteins} label='Proteins' input={true} onChangeText={this.onChangeProteins} />
+          <TotoMacro value={this.state.food.fat} label='Fat' input={true} onChangeText={this.onChangeFat} />
+          <TotoMacro value={this.state.food.sugars} label='Sugar' input={true} onChangeText={this.onChangeSugar} />
         </View>
 
         <View style={styles.sugarContainer}>
@@ -103,10 +334,26 @@ export default class GroceryDetailScreen extends Component {
         </View>
 
         <View style={styles.caloriesContainer}>
-          <TotoCircleValue value={this.state.food.calories} width={this.width - 2 * paddingH} height={126} radius={60} radiusWidth={6} color={theme.color().COLOR_THEME_LIGHT} />
+          <Text style={styles.caloriesLabel}>Kcal</Text>
+          <TextInput
+                style={styles.caloriesInputValue}
+                onChangeText={this.onChangeCalories}
+                keyboardType='numeric'
+                defaultValue={this.state.food.calories != null ? this.state.food.calories.toString() : ''} />
         </View>
 
-      </View>
+        <View style={{flex: 1}}></View>
+
+        <View style={styles.buttonsContainer}>
+          {saveButton}
+          <TotoIconButton
+              image={require('../../img/trash.png')}
+              label='Delete'
+              onPress={this.onDelete} />
+        </View>
+
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     );
   }
 }
@@ -123,9 +370,6 @@ class SugarBar extends Component {
       paddingLeft: 12,
     }
 
-    // Window width
-    this.width = window.width;
-
   }
 
   /**
@@ -140,7 +384,7 @@ class SugarBar extends Component {
     var x = this.sugarBarProps.paddingLeft;
 
     // x scale
-    var xScale = d3.scale.scaleLinear().domain([0, this.props.carbs]).range([0, this.width - 4 * this.sugarBarProps.paddingLeft]);
+    var xScale = d3.scale.scaleLinear().domain([0, this.props.carbs]).range([0, window.width - 4 * this.sugarBarProps.paddingLeft]);
 
     // Path of the bar
     var path = ART.Path()
@@ -159,7 +403,7 @@ class SugarBar extends Component {
     let path = this.createSugarPath(this.props.sugar);
 
     return (
-      <Surface width={this.width} height={40}>
+      <Surface width={window.width} height={20}>
         <Shape d={path} strokeWidth={this.sugarBarProps.strokeWidth} stroke={theme.color().COLOR_ACCENT}/>
       </Surface>
     )
@@ -207,9 +451,6 @@ const styles = StyleSheet.create({
     color: theme.color().COLOR_TEXT,
     paddingVertical: 6
   },
-  caloriesContainer: {
-    flex: 1,
-  },
   categoryContainer: {
     alignItems: 'center',
     paddingVertical: 12,
@@ -220,13 +461,50 @@ const styles = StyleSheet.create({
     paddingTop: 6,
   },
   sugarContainer: {
-    height: 80,
-    paddingVertical: 12,
+    height: 50,
+    paddingTop: 12,
   },
   sugarLabel: {
     fontSize: 12,
     color: theme.color().COLOR_TEXT,
     paddingLeft: paddingH,
     paddingBottom: 6
+  },
+  nameTextInputContainer: {
+    paddingVertical: 12,
+  },
+  nameTextInput: {
+    fontSize: 20,
+    color: theme.color().COLOR_TEXT,
+    textAlign: 'center'
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    padding: 12,
+  },
+  caloriesContainer: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  caloriesLabel: {
+    fontSize: 12,
+    color: theme.color().COLOR_TEXT,
+    textAlign: 'center',
+    width: 100,
+    paddingBottom: 6
+  },
+  caloriesInputValue: {
+    color: theme.color().COLOR_TEXT,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderColor: theme.color().COLOR_THEME_LIGHT,
+    borderWidth: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+    fontSize: 22
   },
 });

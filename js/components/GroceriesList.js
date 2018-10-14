@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Text, View, StyleSheet} from 'react-native';
 import * as theme from '../styles/ThemeColors';
 import DietAPI from '../services/DietAPI';
+import * as TotoEventBus from '../services/TotoEventBus';
 import TotoFlatList from '../widgets/TotoFlatList';
 
 /**
@@ -21,6 +22,36 @@ export default class GroceriesList extends Component {
     // Load the groceries
     this.loadGroceries();
 
+    // Bind to this
+    this.onFoodListChanged = this.onFoodListChanged.bind(this);
+
+  }
+
+  /**
+   * When mounting
+   */
+  componentDidMount() {
+    // Subscribe to events
+    TotoEventBus.bus.subscribeToEvent('newFoodCreated', this.onFoodListChanged);
+    TotoEventBus.bus.subscribeToEvent('foodDeleted', this.onFoodListChanged);
+    TotoEventBus.bus.subscribeToEvent('foodUpdated', this.onFoodListChanged);
+  }
+
+  /**
+   * When unmounting
+   */
+  componentWillUnmount() {
+    // Unsubscribe to events
+    TotoEventBus.bus.unsubscribeToEvent('newFoodCreated', this.onFoodListChanged);
+    TotoEventBus.bus.unsubscribeToEvent('foodDeleted', this.onFoodListChanged);
+    TotoEventBus.bus.unsubscribeToEvent('foodUpdated', this.onFoodListChanged);
+  }
+
+  /**
+   * React to the event where the food is added
+   */
+  onFoodListChanged(event) {
+    this.loadGroceries();
   }
 
   /**
@@ -31,7 +62,9 @@ export default class GroceriesList extends Component {
     var category = this.props.category;
 
     new DietAPI().getGroceries(category).then((data) => {
-      this.setState({groceries : data.foods});
+      this.setState({
+        groceries: []
+      }, () => {this.setState({groceries : data.foods})});
     })
   }
 

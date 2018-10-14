@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, View, Text, Image, ART, Dimensions, Animated, Easing } from 'react-native';
+import {StyleSheet, View, Text, Image, ART, Dimensions, Animated, Easing, TextInput } from 'react-native';
 import TotoAnimatedNumber from '../widgets/TotoAnimatedNumber';
 import * as theme from '../styles/ThemeColors';
 
@@ -10,6 +10,9 @@ import * as theme from '../styles/ThemeColors';
  * Requires:
  * - label      : the name of the macro (e.g. Carbs, Proteins, ...)
  * - Value      : the value, to which this widget is going to append 'g'
+ * - input      : true if this should allow user input to set the macro.
+ *                note that if this is set, the onChangeText prop has to be set too
+ * - onChangeText: callback called when the user input changes
  */
 export default class TotoMacro extends Component {
 
@@ -32,11 +35,25 @@ export default class TotoMacro extends Component {
    */
   render() {
 
+    // Define if this is a text input or just a display of the macro number
+    let valueContainer;
+
+    if (this.props.input) valueContainer = (
+      <TextInput
+          style={styles.valueInput}
+          onChangeText={(text) => {this.props.onChangeText(text.replace(',', '.'))}}
+          keyboardType='numeric'
+          defaultValue={this.state.value != null ? this.state.value.toString() : ''} />
+    )
+    else valueContainer = (
+      <TotoAnimatedNumber style={styles.macroValue} value={this.state.value} />
+    )
+
     return (
 
       <View style={styles.macroContainer}>
         <Text style={styles.macroLabel}>{this.props.label}</Text>
-        <TotoAnimatedNumber style={styles.macroValue} value={this.state.value} />
+        {valueContainer}
       </View>
     )
   }
@@ -69,6 +86,12 @@ const styles = StyleSheet.create({
   macroValue: {
     fontSize: 16,
     flexDirection: 'row',
+    textAlign: 'center',
+    color: theme.color().COLOR_TEXT_ACCENT,
+    paddingVertical: 6
+  },
+  valueInput: {
+    fontSize: 16,
     textAlign: 'center',
     color: theme.color().COLOR_TEXT_ACCENT,
     paddingVertical: 6

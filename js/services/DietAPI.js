@@ -230,8 +230,6 @@ export default class DietAPI {
    */
   putGoal(id, data) {
 
-    console.log(data);
-
     return new TotoAPI().fetch('/diet/goal/' + id, {
       method: 'PUT',
       headers: {
@@ -239,6 +237,41 @@ export default class DietAPI {
       },
       body: JSON.stringify(data)
     }).then((response => response.json()));
+  }
+
+  /**
+   * Add a new food
+   */
+  postFood(food) {
+
+    return new TotoAPI().fetch('/diet/foods', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(food)
+    }).then((response => response.json()));
+  }
+
+  /**
+   * Update the specified food
+   */
+  putFood(id, food) {
+
+    return new TotoAPI().fetch('/diet/foods/' + id, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(food)
+    }).then((response => response.json()));
+  }
+
+  /**
+   * Delete a food
+   */
+  deleteFood(foodId) {
+    return new TotoAPI().fetch('/diet/foods/' + foodId, {method: 'DELETE'});
   }
 
 }

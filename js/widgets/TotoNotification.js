@@ -137,6 +137,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
-    color: theme.color().COLOR_TEXT
+    color: theme.color().COLOR_TEXT_ACCENT
   }
 })
