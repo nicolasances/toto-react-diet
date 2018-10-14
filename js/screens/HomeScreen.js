@@ -38,7 +38,7 @@ export default class HomeScreen extends Component<Props> {
     return (
       <View style={styles.container}>
         <View style={{paddingTop: 12}}><DietDailyMealsTimeline /></View>
-        <View style={{flex: 1, justifyContent: 'center'}}><DietDaySphere radius={70} /></View>
+        <View style={{flex: 1, justifyContent: 'center'}}><DietDaySphere radius={70} onItemPress={() => this.props.navigation.navigate('Goal')} /></View>
         <View style={{paddingBottom: 24, justifyContent: 'center'}}><DietDayMacros /></View>
         <Swiper style={{}} showsPagination={false}>
           <DietDailyMealsGraph height={250} />

@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import AnimateNumber from 'react-native-animate-number';
-import {Animated, Easing, Text, View, StyleSheet, Dimensions, ART} from 'react-native';
+import {Animated, Easing, Text, View, StyleSheet, Dimensions, ART, TouchableOpacity} from 'react-native';
 import * as scale from 'd3-scale';
 import * as shape from 'd3-shape';
 import * as array from 'd3-array';
@@ -133,7 +133,7 @@ export default class DietDaySphere extends Component {
   render() {
 
     return (
-      <View>
+      <TouchableOpacity onPress={this.props.onItemPress}>
 
         <AnimatedProgress width={this.width} height={this.height} radius={this.radius} radiusWidth={this.radiusWidth} progress={this.state.caloriesProgress}/>
 
@@ -142,7 +142,7 @@ export default class DietDaySphere extends Component {
           <Text style={styles.calLabel}>cal.</Text>
         </View>
 
-      </View>
+      </TouchableOpacity>
     )
   }
 

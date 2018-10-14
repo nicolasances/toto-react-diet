@@ -204,5 +204,41 @@ export default class DietAPI {
 
   }
 
+  /**
+   * Returns the dietary goals
+   */
+  getGoal() {
+    return new TotoAPI().fetch('/diet/goal').then((response) => response.json());
+  }
+
+  /**
+   * Posts a new goal
+   */
+  postGoal(data) {
+
+    return new TotoAPI().fetch('/diet/goal', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }).then((response => response.json()));
+  }
+
+  /**
+   * Updates the existing goals
+   */
+  putGoal(id, data) {
+
+    console.log(data);
+
+    return new TotoAPI().fetch('/diet/goal/' + id, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }).then((response => response.json()));
+  }
 
 }
