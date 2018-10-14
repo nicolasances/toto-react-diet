@@ -228,11 +228,11 @@ export default class GroceryDetailScreen extends Component {
     if (this.grocery == null) {
 
       new DietAPI().postFood(this.state.food).then((data) => {
-        // Send a notification
-        TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'You added ' + this.state.food.name + '!'}});
-
         // Send a new food created event
         TotoEventBus.bus.publishEvent({name: 'newFoodCreated', context: {food: this.state.food}});
+
+        // Send a notification
+        TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'You added ' + this.state.food.name + '!'}});
 
         // Go back
         this.props.navigation.goBack();
@@ -242,11 +242,12 @@ export default class GroceryDetailScreen extends Component {
     else {
 
       new DietAPI().putFood(this.grocery.id, this.state.food).then((data) => {
-        // Send a notification
-        TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'You updated ' + this.state.food.name + '!'}});
 
         // Send a new food created event
         TotoEventBus.bus.publishEvent({name: 'foodUpdated', context: {food: this.state.food}});
+
+        // Send a notification
+        TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'You updated ' + this.state.food.name + '!'}});
 
         // Go back
         this.props.navigation.goBack();
@@ -261,16 +262,17 @@ export default class GroceryDetailScreen extends Component {
   onDelete() {
 
     // Delete the food
-    new DietAPI().deleteFood(this.grocery.id);
+    new DietAPI().deleteFood(this.grocery.id).then(() => {
 
-    // Send a notification
-    TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'You deleted ' + this.state.food.name + '!'}});
+      // Send a delete food event
+      TotoEventBus.bus.publishEvent({name: 'foodDeleted', context: {food: this.state.food}});
 
-    // Send a delete food event
-    TotoEventBus.bus.publishEvent({name: 'foodDeleted', context: {food: this.state.food}});
+      // Send a notification
+      TotoEventBus.bus.publishEvent({name: 'notification', context: {text: 'You deleted ' + this.state.food.name + '!'}});
 
-    // Go back
-    this.props.navigation.goBack();
+      // Go back
+      this.props.navigation.goBack();
+    });
   }
 
   /**
