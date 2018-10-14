@@ -134,10 +134,12 @@ export default class GoalScreen extends Component<Props> {
 
         <View style={{flexDirection: 'row'}}>
           <View style={styles.timeContainer} >
+            <Text style={styles.timeLabel}>Last set on: </Text>
             <Text style={styles.date}>{date}</Text>
           </View>
 
           <View style={styles.caloriesContainer}>
+            <Text style={styles.caloriesLabel}>Kcal/day</Text>
             <TextInput
               style={styles.inputValue}
               onChangeText={this.updateCaloriesGoal}
@@ -176,10 +178,22 @@ const styles = StyleSheet.create({
   caloriesContainer: {
     flex: 0.4,
     paddingVertical: 12,
+    alignContent: 'center',
+  },
+  caloriesLabel: {
+    fontSize: 10,
+    color: theme.color().COLOR_TEXT,
+    textAlign: 'center',
+    width: 100,
+    paddingBottom: 6
   },
   date: {
     fontSize: 18,
     color: theme.color().COLOR_TEXT
+  },
+  timeLabel: {
+    fontSize: 10,
+    color: theme.color().COLOR_TEXT + 50
   },
   inputValue: {
     color: theme.color().COLOR_ACCENT,
