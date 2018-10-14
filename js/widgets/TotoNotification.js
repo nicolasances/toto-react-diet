@@ -59,6 +59,7 @@ export default class TotoNotification extends Component {
     // Animate the bottom property of the notification to make the SLIDE IN effect
     Animated.timing(this.state.topAnimated, {
       toValue: window.height - this.height,
+      delay: 500,
       easing: Easing.linear,
       duration: 100,
     }).start(this.hideNotification);
