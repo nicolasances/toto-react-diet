@@ -130,7 +130,7 @@ export default class GoalScreen extends Component<Props> {
 
 
     return (
-      <KeyboardAvoidingView style={styles.container}>
+      <KeyboardAvoidingView behavior='height' style={styles.container}>
 
         <View style={{flexDirection: 'row'}}>
           <View style={styles.timeContainer} >
