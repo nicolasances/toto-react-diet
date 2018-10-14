@@ -3,6 +3,8 @@ import {Platform, StyleSheet, Text, View} from 'react-native';
 import { createStackNavigator } from 'react-navigation';
 import * as theme from './js/styles/ThemeColors';
 
+import TotoNotification from './js/widgets/TotoNotification';
+
 import HomeScreen from './js/screens/HomeScreen';
 import GroceriesCategoriesScreen from './js/screens/GroceryCategoriesScreen';
 import GroceriesScreen from './js/screens/GroceriesScreen';
@@ -42,7 +44,10 @@ export default class App extends Component<Props> {
 
   render() {
     return (
-      <RootStack />
+      <View style={{flex: 1}}>
+        <RootStack />
+        <TotoNotification />
+      </View>
     );
   }
 }

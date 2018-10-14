@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import {View, TouchableOpacity, Image, Text, StyleSheet} from 'react-native';
 import { withNavigation } from 'react-navigation';
 import * as theme from '../styles/ThemeColors';
-import TotoNotification from './TotoNotification';
 
 /**
  * Title bar for Toto.
@@ -109,8 +108,6 @@ class TotoTitleBar extends Component {
         {leftButton}
         {title}
         {rightButton}
-
-        <TotoNotification />
 
       </View>
     );
