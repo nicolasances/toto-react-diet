@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import * as TotoEventBus from '../services/TotoEventBus';
+import * as theme from '../styles/ThemeColors';
 import DietAPI from '../services/DietAPI';
 import TotoBarChart from '../widgets/TotoBarChart';
 import moment from 'moment';
@@ -13,7 +14,8 @@ export default class WeeklyStats extends Component {
     this.height = props.height == null ? 250 : props.height;
 
     this.state = {
-      mealsStats: []
+      mealsStats: [],
+      averageCalories: 0
     };
 
     // Bind the functions that need 'this'
@@ -58,6 +60,9 @@ export default class WeeklyStats extends Component {
 
     if (this.state.dates == null) return;
 
+    // Define the average calories
+    let averageCalories = 0;
+
 		// Put the data as an array of {}
 		var data = [];
 		for (var i = 0; i < this.state.dates.length; i++) {
@@ -72,6 +77,9 @@ export default class WeeklyStats extends Component {
         // If the date is today => highlight as temporary
         if (this.state.dates[i] >= moment().format('YYYYMMDD')) datum.temporary = true;
 
+        // Add the calories
+        averageCalories += day.calories;
+
         // Add the datum
         data.push(datum);
       }
@@ -80,8 +88,12 @@ export default class WeeklyStats extends Component {
       }
 		}
 
+    // Calculate average calories
+    averageCalories = averageCalories / this.state.dates.length;
+
     this.setState({
-      mealsStats: data
+      mealsStats: data,
+      averageCalories: averageCalories.toFixed(0)
     });
   }
 
@@ -151,12 +163,43 @@ export default class WeeklyStats extends Component {
   render() {
 
     return (
-      <View>
-        <TotoBarChart data={this.state.mealsStats} height={250} valueLabelTransform={(value) => value.toFixed(0)} />
+      <View style={{height: 250}}>
+        <View style={styles.infoContainer}>
+          <Text style={styles.week}>Week {moment().format('W')}</Text>
+          <View style={{flex: 1}}></View>
+          <View>
+            <Text style={styles.averageLabel}>Average Kcal</Text>
+            <Text style={styles.averageValue}>{this.state.averageCalories}</Text>
+          </View>
+        </View>
+        <TotoBarChart
+              height={150}
+              data={this.state.mealsStats}
+              xAxisTransform={(value) => moment(value, 'YYYYMMDD').format('dd')}
+              valueLabelTransform={(value) => value.toFixed(0)}
+              />
       </View>
     )
   }
 }
 
 const styles = StyleSheet.create({
+  infoContainer: {
+    flex: 1,
+    padding: 12,
+    flexDirection: 'row',
+  },
+  week: {
+    color: theme.color().COLOR_TEXT,
+    fontSize: 16,
+  },
+  averageLabel: {
+    color: theme.color().COLOR_TEXT,
+    fontSize: 12,
+  },
+  averageValue: {
+    color: theme.color().COLOR_ACCENT,
+    fontSize: 18,
+    textAlign: 'right',
+  },
 });

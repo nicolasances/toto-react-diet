@@ -20,6 +20,7 @@ const window = Dimensions.get('window');
  *                            temporary: boolean, optional, if true will highlight this element as a temporary one
  *                          }, {...} ]
  * - valueLabelTransform : a function, optional, (value) => {transforms the value to be displayed on the bar (top part)}
+ * - xAxisTransform      : a function to be called with the x axis value to generate a label to put on the bar (bottom part)
  */
 class TotoBarChart extends Component {
 
@@ -132,6 +133,43 @@ class TotoBarChart extends Component {
   }
 
   /**
+   * Create the x axis labels
+   */
+  createXAxisLabels(data) {
+
+    if (data == null) return;
+    if (this.props.xAxisTransform == null) return;
+
+    // The labels
+    let labels = [];
+
+    // For each point, create a bar
+    for (var i = 0; i < data.length; i++) {
+
+      // The single datum
+      let value = data[i].x;
+
+      // Transform the value if necessary
+      value = this.props.xAxisTransform(value);
+
+      // Positioning of the text
+      let x = this.x(data[i].x);
+      let key = 'Label-X-' + Math.random();
+
+      // Create the text element
+      let element = (
+        <View key={key} style={{position: 'absolute', left: x, top: this.height - 40, width: this.barWidth, alignItems: 'center'}}>
+          <Text style={styles.xAxisLabel}>{value}</Text>
+        </View>
+      );
+
+      labels.push(element);
+    }
+
+    return labels;
+  }
+
+  /**
    * Creates the bars
    */
   createBars(data) {
@@ -172,6 +210,7 @@ class TotoBarChart extends Component {
 
     let bars = this.createBars(this.state.data);
     let labels = this.createValueLabels(this.state.data);
+    let xLabels = this.createXAxisLabels(this.state.data);
 
     return (
       <View style={styles.container}>
@@ -179,6 +218,7 @@ class TotoBarChart extends Component {
           {bars}
         </Surface>
         {labels}
+        {xLabels}
       </View>
     )
   }
@@ -198,6 +238,10 @@ const styles = StyleSheet.create({
   },
   valueLabel: {
     color: theme.color().COLOR_ACCENT,
+    fontSize: 14,
+  },
+  xAxisLabel: {
+    color: theme.color().COLOR_TEXT + '50',
     fontSize: 14,
   },
 });
