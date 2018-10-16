@@ -62,6 +62,7 @@ export default class WeeklyStats extends Component {
 
     // Define the average calories
     let averageCalories = 0;
+    let days = 0;
 
 		// Put the data as an array of {}
 		var data = [];
@@ -77,8 +78,11 @@ export default class WeeklyStats extends Component {
         // If the date is today => highlight as temporary
         if (this.state.dates[i] >= moment().format('YYYYMMDD')) datum.temporary = true;
 
-        // Add the calories
-        averageCalories += day.calories;
+        // Add the calories and increase the number of days, if we're before than today
+        if (this.state.dates[i] < moment().format('YYYYMMDD')) {
+          averageCalories += day.calories;
+          days++;
+        }
 
         // Add the datum
         data.push(datum);
@@ -89,7 +93,7 @@ export default class WeeklyStats extends Component {
 		}
 
     // Calculate average calories
-    averageCalories = averageCalories / this.state.dates.length;
+    averageCalories = averageCalories / days;
 
     this.setState({
       mealsStats: data,
