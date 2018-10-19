@@ -20,10 +20,10 @@ export default class DietDaySphere extends Component {
 
     super(props);
 
-    this.width = Dimensions.get('window').width;
-    this.height = 200;
+    this.radiusWidth = this.props.radiusWidth != null ? this.props.radiusWidth : 12;
     this.radius = this.props.radius == null ? 80 : this.props.radius;
-    this.radiusWidth = 12;
+    this.width = this.props.width != null ? this.props.width : Dimensions.get('window').width;
+    this.height = 200;
     this.firstAnimationSpeed = 1500;
     this.stdAnimationSpeed = 300;
 
