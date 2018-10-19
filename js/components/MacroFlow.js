@@ -36,7 +36,7 @@ export default class MacroFlow extends Component {
     this.height = this.props.height != null ? this.props.height : 100;
 
     // Parameter: number of days to extract macros from
-    this.prospection = 12;
+    this.prospection = 14;
 
     // H Gap between the points
     this.hgap = 0;
@@ -45,6 +45,9 @@ export default class MacroFlow extends Component {
     this.pplotSize = 1.5;
     this.cplotSize = 1.5;
     this.fplotSize = 1.5;
+
+    this.minPlotOpacity = 99;
+    this.maxPlotOpacity = 99;
 
     // Bind this
     this.redefineScales = this.redefineScales.bind(this);
@@ -102,9 +105,13 @@ export default class MacroFlow extends Component {
 
         // Create the 3 plots (proteins, carbs, fats)
         if (datum) {
-          plots.push({x: this.x(datum.date), y: this.y(datum.proteins), color: theme.color().COLOR_ACCENT, radius: this.pplotSize});
+          // Define the opacity of the point
+          let opacity = this.gscale(datum.date);
+
+          // Create the plot
+          plots.push({x: this.x(datum.date), y: this.y(datum.proteins), color: theme.color().COLOR_ACCENT , radius: this.pplotSize});
           plots.push({x: this.x(datum.date) + this.hgap, y: this.y(datum.carbs), color: theme.color().COLOR_ACCENT, radius: this.cplotSize});
-          plots.push({x: this.x(datum.date) + this.hgap * 2, y: this.y(datum.fats), color: theme.color().COLOR_ACCENT, radius: this.fplotSize});
+          plots.push({x: this.x(datum.date) + this.hgap * 2, y: this.y(datum.fats), color: theme.color().COLOR_ACCENT , radius: this.fplotSize});
         }
 
         start = start.add(1, 'days');
@@ -131,6 +138,10 @@ export default class MacroFlow extends Component {
 
     this.x = d3.scale.scaleLinear().range([6, this.width - 2 - this.hgap * 2]).domain([xmin, xmax]);
     this.y = d3.scale.scaleLinear().range([this.height - 2, 2]).domain([ymin, ymax]);
+
+    // Grey scale
+    this.gscale = d3.scale.scaleLinear().range([this.minPlotOpacity, this.maxPlotOpacity]).domain([xmin, xmax]);
+
   }
 
   /**
