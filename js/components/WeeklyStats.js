@@ -93,7 +93,7 @@ export default class WeeklyStats extends Component {
 		}
 
     // Calculate average calories
-    averageCalories = averageCalories / days;
+    averageCalories = days == 0 ? 0 : averageCalories / days;
 
     this.setState({
       mealsStats: data,
