@@ -49,9 +49,9 @@ export default class HomeScreen extends Component<Props> {
         </View>
         <View style={{paddingBottom: 24, justifyContent: 'center'}}><DietDayMacros /></View>
         <Swiper style={{}} showsPagination={false}>
-          <MonthlyStats height={250} />
           <DietDailyMealsGraph height={250} />
           <WeeklyStats height={250} />
+          <MonthlyStats height={250} />
         </Swiper>
       </View>
     );
