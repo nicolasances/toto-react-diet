@@ -49,6 +49,8 @@ export default class MacroFlow extends Component {
     this.minPlotOpacity = 99;
     this.maxPlotOpacity = 99;
 
+    this.plotColor = theme.color().COLOR_THEME_LIGHT;
+
     // Bind this
     this.redefineScales = this.redefineScales.bind(this);
   }
@@ -109,9 +111,9 @@ export default class MacroFlow extends Component {
           let opacity = this.gscale(datum.date);
 
           // Create the plot
-          plots.push({x: this.x(datum.date), y: this.y(datum.proteins), color: theme.color().COLOR_ACCENT , radius: this.pplotSize});
-          plots.push({x: this.x(datum.date) + this.hgap, y: this.y(datum.carbs), color: theme.color().COLOR_ACCENT, radius: this.cplotSize});
-          plots.push({x: this.x(datum.date) + this.hgap * 2, y: this.y(datum.fats), color: theme.color().COLOR_ACCENT , radius: this.fplotSize});
+          plots.push({x: this.x(datum.date), y: this.y(datum.proteins), color: this.plotColor , radius: this.pplotSize});
+          plots.push({x: this.x(datum.date) + this.hgap, y: this.y(datum.carbs), color: this.plotColor, radius: this.cplotSize});
+          plots.push({x: this.x(datum.date) + this.hgap * 2, y: this.y(datum.fats), color: this.plotColor, radius: this.fplotSize});
         }
 
         start = start.add(1, 'days');
