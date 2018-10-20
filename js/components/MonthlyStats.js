@@ -3,10 +3,10 @@ import {View, Text, StyleSheet} from 'react-native';
 import * as TotoEventBus from '../services/TotoEventBus';
 import * as theme from '../styles/ThemeColors';
 import DietAPI from '../services/DietAPI';
-import TotoLineChart from '../widgets/TotoLineChart';
+import TotoBarChart from '../widgets/TotoBarChart';
 import moment from 'moment';
 
-export default class WeeklyStats extends Component {
+export default class MonthlyStats extends Component {
 
   constructor(props) {
     super(props);
@@ -14,9 +14,11 @@ export default class WeeklyStats extends Component {
     this.height = props.height == null ? 250 : props.height;
 
     this.state = {
-      mealsStats: [],
-      averageCalories: 0
+      mealsStats: []
     };
+
+    // Set the prospection IN MONTHS
+    this.prospection = 7;
 
     // Bind the functions that need 'this'
     this.updateState = this.updateState.bind(this);
@@ -53,57 +55,45 @@ export default class WeeklyStats extends Component {
   /**
    * Updates the state
    */
-  updateState(mealsStats) {
+  updateState(response) {
 
-    if (mealsStats == null) return;
-
-    // Define the average calories
-    let averageCalories = 0;
-    let days = 0;
+    if (response == null) return;
 
 		// Put the data as an array of {}
 		var data = [];
-		for (var i = 0; i < mealsStats.meals.length; i++) {
+		for (var i = 0; i < response.meals.length; i++) {
 
-      var day = mealsStats.meals[i];
+      let week = response.meals[i];
 
-      let datum = {x: new Date(moment(day.date, 'YYYYMMDD')), y: day.calories};
+      // Create a date out of the week and year (like the day of the first day of that week)
+      let date = moment(week.year + '-' + week.week, 'YYYYWW');
 
-      // If the date is today => highlight as temporary
-      if (day.date >= moment().format('YYYYMMDD')) datum.temporary = true;
-
-      // Add the calories and increase the number of days, if we're before than today
-      if (day.date < moment().format('YYYYMMDD')) {
-        averageCalories += day.calories;
-        days++;
-      }
+      let datum = {x: new Date(date), y: week.calories};
 
       // Add the datum
       data.push(datum);
-
 		}
 
-    // Calculate average calories
-    averageCalories = days == 0 ? 0 : averageCalories / days;
-
     this.setState({
-      mealsStats: data,
-      averageCalories: averageCalories.toFixed(0)
+      mealsStats: data
     });
   }
 
   /**
    * Loads the weekly meals data from the API
    * Retrieves the meals of the week
+   *
+   * Consider that the week starts on FRIDAY since that's when the
+   * weight is taken
    */
   loadData() {
 
 		var date = moment();
 
-		// Go to the sunday start of the week
-		date = date.startOf('week');
+		// Go back to the prospection required
+		date = date.subtract(this.prospection, 'months');
 
-		new DietAPI().getCaloriesPerDay(date.format('YYYYMMDD')).then(this.updateState);
+		new DietAPI().getCaloriesPerWeek(date.format('YYYYMMDD')).then(this.updateState);
 
   }
 
@@ -114,18 +104,11 @@ export default class WeeklyStats extends Component {
 
     return (
       <View style={{height: 250}}>
-        <View style={styles.infoContainer}>
-          <View style={{flex: 1}}></View>
-          <View>
-            <Text style={styles.averageLabel}>Average Kcal</Text>
-            <Text style={styles.averageValue}>{this.state.averageCalories}</Text>
-          </View>
-        </View>
-        <TotoLineChart
-              height={150}
+        <View style={{flex: 1}}></View>
+        <TotoBarChart
+              height={200}
+              barSpacing={1}
               data={this.state.mealsStats}
-              xAxisTransform={(value) => moment(value).format('dd')}
-              valueLabelTransform={(value) => value.toFixed(0)}
               />
       </View>
     )

@@ -186,6 +186,28 @@ export default class DietAPI {
 	}
 
   /**
+   * Returns the calories for each day since the specified date
+   */
+  getCaloriesPerDay(dateFrom) {
+
+    var filter = '?dateFrom=' + dateFrom;
+
+    return new TotoAPI().fetch('/diet/stats/caloriesPerDay' + filter).then((response) => response.json());
+
+  }
+
+  /**
+   * Returns the /stats/caloriesPerWeek data
+   */
+  getCaloriesPerWeek(dateFrom) {
+
+    var filter = '?dateFrom=' + dateFrom;
+
+    return new TotoAPI().fetch('/diet/stats/caloriesPerWeek' + filter).then((response) => response.json());
+
+  }
+
+  /**
    * Returns the categories for the groceries
    */
   getGroceryCategories() {

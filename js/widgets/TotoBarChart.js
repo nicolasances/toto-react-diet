@@ -21,6 +21,7 @@ const window = Dimensions.get('window');
  *                          }, {...} ]
  * - valueLabelTransform : a function, optional, (value) => {transforms the value to be displayed on the bar (top part)}
  * - xAxisTransform      : a function to be called with the x axis value to generate a label to put on the bar (bottom part)
+ * - barSpacing          : (optional) the spacing between bars. Default 2
  */
 class TotoBarChart extends Component {
 
@@ -34,9 +35,6 @@ class TotoBarChart extends Component {
     this.state = {
       data: null
     }
-
-    // Set the basic properties
-    this.barSpacing = 2;
   }
 
   /**
@@ -60,6 +58,8 @@ class TotoBarChart extends Component {
 
     // Set height
     this.height = props.height == null ? 250 : props.height;
+
+    this.barSpacing = props.barSpacing == null ? 2 : props.barSpacing;
 
     // Set the barWidth
     this.barWidth = props.data != null ? (window.width / props.data.length - this.barSpacing * 2) : 0;
@@ -99,6 +99,8 @@ class TotoBarChart extends Component {
    * Create the labels with the values
    */
   createValueLabels(data) {
+
+    if (this.props.valueLabelTransform == null) return;
 
     if (data == null) return;
 

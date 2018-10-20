@@ -160,7 +160,7 @@ class TotoLineChart extends Component {
 
       // Create the text element
       let element = (
-        <View key={key} style={{position: 'absolute', left: x, top: this.height - y - 28, alignItems: 'center'}}>
+        <View key={key} style={{position: 'absolute', left: x - 8, top: this.height - y - 28, alignItems: 'center'}}>
           <Text style={styles.valueLabel}>{value}</Text>
         </View>
       );
@@ -287,10 +287,10 @@ const styles = StyleSheet.create({
   },
   valueLabel: {
     color: theme.color().COLOR_TEXT,
-    fontSize: 14,
+    fontSize: 10,
   },
   xAxisLabel: {
     color: theme.color().COLOR_TEXT + '50',
-    fontSize: 12,
+    fontSize: 10,
   },
 });
