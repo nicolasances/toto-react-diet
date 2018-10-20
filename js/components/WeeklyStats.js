@@ -3,7 +3,7 @@ import {View, Text, StyleSheet} from 'react-native';
 import * as TotoEventBus from '../services/TotoEventBus';
 import * as theme from '../styles/ThemeColors';
 import DietAPI from '../services/DietAPI';
-import TotoBarChart from '../widgets/TotoBarChart';
+import TotoLineChart from '../widgets/TotoLineChart';
 import moment from 'moment';
 
 export default class WeeklyStats extends Component {
@@ -169,14 +169,13 @@ export default class WeeklyStats extends Component {
     return (
       <View style={{height: 250}}>
         <View style={styles.infoContainer}>
-          <Text style={styles.week}>Week {moment().format('W')}</Text>
           <View style={{flex: 1}}></View>
           <View>
             <Text style={styles.averageLabel}>Average Kcal</Text>
             <Text style={styles.averageValue}>{this.state.averageCalories}</Text>
           </View>
         </View>
-        <TotoBarChart
+        <TotoLineChart
               height={150}
               data={this.state.mealsStats}
               xAxisTransform={(value) => moment(value, 'YYYYMMDD').format('dd')}
@@ -203,7 +202,7 @@ const styles = StyleSheet.create({
   },
   averageValue: {
     color: theme.color().COLOR_ACCENT,
-    fontSize: 18,
+    fontSize: 22,
     textAlign: 'right',
   },
 });
