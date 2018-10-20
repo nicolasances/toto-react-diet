@@ -13,7 +13,8 @@ const categories = [{id: 'meat', name: 'Meat', image: require('../../img/groceri
                     {id: 'pasta', name: 'Pasta & Rice', image: require('../../img/groceries/categories/pasta.png')},
                     {id: 'cakes', name: 'Cake', image: require('../../img/groceries/categories/cake.png')},
                     {id: 'meal', name: 'Prepared food', image: require('../../img/groceries/categories/meal.png')},
-                    {id: 'sauce', name: 'Sauces & Jams', image: require('../../img/groceries/categories/sauce.png')}
+                    {id: 'sauce', name: 'Sauces & Jams', image: require('../../img/groceries/categories/sauce.png')},
+                    {id: 'cereals', name: 'Cereals', image: require('../../img/groceries/categories/cereals.png')}
                    ]
 
 /**
