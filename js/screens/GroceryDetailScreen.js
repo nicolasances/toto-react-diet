@@ -1,14 +1,14 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {Keyboard, StyleSheet, View, Text, Image, ART, Dimensions, Animated, Easing, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
+import {Keyboard, StyleSheet, View, Text, Image, ART, Dimensions, Animated, Easing, TextInput, KeyboardAvoidingView, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import * as scale from 'd3-scale';
 import * as shape from 'd3-shape';
 import * as array from 'd3-array';
 import * as path from 'd3-path';
 import * as theme from '../styles/ThemeColors';
+import * as TotoEventBus from '../services/TotoEventBus';
 import TotoTitleBar from '../widgets/TotoTitleBar';
 import DietAPI from '../services/DietAPI';
-import * as TotoEventBus from '../services/TotoEventBus';
 import TotoCircleValue from '../widgets/TotoCircleValue';
 import TotoMacro from '../widgets/TotoMacro';
 import TotoIconButton from '../widgets/TotoIconButton';
@@ -75,6 +75,7 @@ export default class GroceryDetailScreen extends Component {
         category: categoryId
       },
       category: new DietAPI().getGroceryCategory(categoryId),
+      changed: false,
       sugarAnimatedValue: new Animated.Value(0)
     };
 
@@ -87,6 +88,8 @@ export default class GroceryDetailScreen extends Component {
     this.onChangeSugar = this.onChangeSugar.bind(this);
     this.onOk = this.onOk.bind(this);
     this.onDelete = this.onDelete.bind(this);
+    this.changeCategory = this.changeCategory.bind(this);
+    this.onCategorySelected = this.onCategorySelected.bind(this);
   }
 
   /**
@@ -103,6 +106,17 @@ export default class GroceryDetailScreen extends Component {
       // and animate the sugar bar
       () => {this.animateSugarBar(this.state.food.sugars, 1000, Easing.bounce);});
     }
+
+    // Register to events
+    TotoEventBus.bus.subscribeToEvent('categorySelected', this.onCategorySelected);
+  }
+
+  /**
+   * Unmounting
+   */
+  componentWillUnmount() {
+    // Unsubscribe to events
+    TotoEventBus.bus.unsubscribeToEvent('categorySelected', this.onCategorySelected);
   }
 
   /**
@@ -115,6 +129,23 @@ export default class GroceryDetailScreen extends Component {
       easing: ease,
       duration: dur,
     }).start();
+
+  }
+
+  /**
+   * Reacts to the event of a category beeing selected, as part of the food's category change
+   */
+  onCategorySelected(event) {
+
+    // Change the category of the food
+    this.setState((prevState) => ({
+      changed: true,
+      food: {
+        ...prevState.food,
+        category: event.context.category.id
+      },
+      category: event.context.category
+    }));
 
   }
 
@@ -276,6 +307,22 @@ export default class GroceryDetailScreen extends Component {
   }
 
   /**
+   * Changes the category of the food
+   */
+  changeCategory() {
+
+    // Define a temp navigation key
+    let ref = 'GroceryDetail-' + Math.random();
+
+    // Navigate
+    this.props.navigation.navigate({
+      routeName: 'GroceriesCategories',
+      params: {selectionMode: {active: true, referer: ref}},
+      key: ref
+    });
+  }
+
+  /**
    * Render the screen
    */
   render() {
@@ -318,10 +365,10 @@ export default class GroceryDetailScreen extends Component {
 
         {nameTextInput}
 
-        <View style={styles.categoryContainer}>
+        <TouchableOpacity style={styles.categoryContainer} onPress={this.changeCategory}>
           <Image source={this.state.category.image}  style={{width: 48, height: 48, tintColor: theme.color().COLOR_TEXT}} />
           <Text style={styles.categoryLabel}>{this.state.category.name}</Text>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.macrosContainer}>
           <TotoMacro value={this.state.food.carbs} label='Carbs' input={true} onChangeText={this.onChangeCarbs} />

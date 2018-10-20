@@ -10,9 +10,14 @@ const TotoEvents = [
                       * 1. Event thrown when a new food is created.
                       * The context of the event will contain the created food (without the id)
                       * 2. Deleted food
-                      * 3. Updated food 
+                      * 3. Updated food
                       */
                      'newFoodCreated', 'foodDeleted', 'foodUpdated',
+
+                     /**
+                      * Event triggered when a category is selected
+                      */
+                    'categorySelected',
 
                      /**
                       * This event is triggered when a grocery (food) is selected
