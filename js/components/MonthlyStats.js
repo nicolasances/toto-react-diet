@@ -14,7 +14,9 @@ export default class MonthlyStats extends Component {
     this.height = props.height == null ? 250 : props.height;
 
     this.state = {
-      mealsStats: []
+      mealsStats: [],
+      // Define the y lines
+      ylines: [2000, 2500, 3000]
     };
 
     // Set the prospection IN MONTHS
@@ -65,6 +67,9 @@ export default class MonthlyStats extends Component {
 
       let week = response.meals[i];
 
+      // Skip this current week
+      if (week.week == moment().format('WW') && week.year == moment().format('YYYY')) continue;
+
       // Create a date out of the week and year (like the day of the first day of that week)
       let date = moment(week.year + '-' + week.week, 'YYYYWW');
 
@@ -109,6 +114,11 @@ export default class MonthlyStats extends Component {
               height={200}
               barSpacing={1}
               data={this.state.mealsStats}
+              yLines={this.state.ylines}
+              minY={1500}
+              xAxisTransform={(x) => {return moment(x).format('MMM')}}
+              xLabelMode='when-changed'
+              xLabelWidth='unlimited'
               />
       </View>
     )

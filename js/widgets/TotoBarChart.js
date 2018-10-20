@@ -21,7 +21,16 @@ const window = Dimensions.get('window');
  *                          }, {...} ]
  * - valueLabelTransform : a function, optional, (value) => {transforms the value to be displayed on the bar (top part)}
  * - xAxisTransform      : a function to be called with the x axis value to generate a label to put on the bar (bottom part)
+ * - xLabelMode          : (optional) specifies the mode in which the x labels are shown:
+ *                           - if 'when-changed' the x label is shown only when the value changes
+ * - xLabelWidth         : (optional) specified is the label width has to be set or should be unlimited
+ *                         default: limited to the bar width
+ *                           - if 'unlimited' it won't be limited to the bar width
  * - barSpacing          : (optional) the spacing between bars. Default 2
+ * - yLines              : (optioanl) the y values for which to draw a horizontal line (to show the scale)
+ *                         if passed, it's an [y1, y2, y3, ...]
+ *                         each value will correspond to a horizontal line
+ * - minY                : (optional) the minimum y value to consider as the "lowest" value, when defining the SCALE
  */
 class TotoBarChart extends Component {
 
@@ -33,7 +42,8 @@ class TotoBarChart extends Component {
 
     // Init the state!
     this.state = {
-      data: null
+      data: null,
+      yLines: []
     }
   }
 
@@ -66,32 +76,39 @@ class TotoBarChart extends Component {
 
     if (!this.mounted) return;
 
-    // Update the state with the new data
-    this.setState({data: []}, () => {this.setState({data: props.data})});
-
     // Define the min and max x values
     let xMin = d3.array.min(props.data, (d) => {return d.x});
     let xMax = d3.array.max(props.data, (d) => {return d.x});
 
     // Define the min and max y values
-    let yMin = d3.array.min(props.data, (d) => {return d.y});
+    let yMin = props.minY == null ? 0 : props.minY;
     let yMax = d3.array.max(props.data, (d) => {return d.y});
 
     // Update the scales
     this.x = d3.scale.scaleLinear().range([this.barSpacing, window.width - this.barWidth - this.barSpacing]).domain([xMin, xMax]);
-    this.y = d3.scale.scaleLinear().range([0, this.height]).domain([0, yMax]);
+    this.y = d3.scale.scaleLinear().range([0, this.height]).domain([yMin, yMax]);
 
+    // Update the state with the new data
+    this.setState({data: [], yLines: []}, () => {
+      this.setState({
+        data: props.data,
+        yLines: props.yLines
+      })
+    });
   }
 
   /**
    * Returns a shape drawing the provided path
    */
-  createShape(path, color) {
+  createShape(path, color, fillColor, strokeWidth) {
+
+    if (strokeWidth == null) strokeWidth = 0;
+    if (fillColor == null) fillColor = color;
 
     let key = 'TotoBarChartShape-' + Math.random();
 
     return (
-      <Shape key={key} d={path} strokeWidth={0} stroke={color} fill={color} />
+      <Shape key={key} d={path} strokeWidth={strokeWidth} stroke={color} fill={color} />
     )
   }
 
@@ -145,6 +162,9 @@ class TotoBarChart extends Component {
     // The labels
     let labels = [];
 
+    // Value of the last x label
+    let lastValue = null;
+
     // For each point, create a bar
     for (var i = 0; i < data.length; i++) {
 
@@ -154,13 +174,31 @@ class TotoBarChart extends Component {
       // Transform the value if necessary
       value = this.props.xAxisTransform(value);
 
-      // Positioning of the text
+      // If the label needs to be shown only when it changes value:
+      if (this.props.xLabelMode == 'when-changed') {
+        // if it equals the last value, continue
+        if (value == lastValue) continue;
+
+      }
+
+      // Update the last label value
+      lastValue = value;
+
+      // Define the width of the label
+      let labelWidth = this.props.xLabelWidth == 'unlimited' ? null : this.barWidth;
+
+      // Define the x position
+      // Equals to the start of the bar, unless the xLabelWidth is 'unlimited', in that case a padding is added
       let x = this.x(data[i].x);
+
+      if (this.props.xLabelWidth == 'unlimited') x += 3;
+
+      // Define the key
       let key = 'Label-X-' + Math.random();
 
       // Create the text element
       let element = (
-        <View key={key} style={{position: 'absolute', left: x, top: this.height - 40, width: this.barWidth, alignItems: 'center'}}>
+        <View key={key} style={{position: 'absolute', left: x, top: this.height - 40, width: labelWidth, alignItems: 'center'}}>
           <Text style={styles.xAxisLabel}>{value}</Text>
         </View>
       );
@@ -206,6 +244,57 @@ class TotoBarChart extends Component {
   }
 
   /**
+   * Creates the horizontal y scale lines as requested in the property yLines
+   */
+  createYLines(ylines) {
+
+    if (ylines == null) return;
+
+    let shapes = [];
+
+    for (var i = 0; i < ylines.length; i++) {
+
+      let line = d3.shape.line()
+          .x((d) => {return d.x})
+          .y((d) => {return d.y});
+
+      let path = line([{x: 0, y: this.height - this.y(ylines[i])}, {x: window.width, y: this.height - this.y(ylines[i])}]);
+
+      shapes.push(this.createShape(path, theme.color().COLOR_THEME_LIGHT + 50, null, 1));
+    }
+
+    return shapes;
+
+  }
+
+  /**
+   * Creates the labels to put on the ylines, if any
+   */
+  createYLinesLabels(ylines) {
+
+    if (ylines == null) return;
+
+    let shapes = [];
+
+    for (var i = 0; i < ylines.length; i++) {
+
+      let key = 'Label-YLine-' + Math.random();
+
+      // Create the text element
+      let element = (
+        <View key={key} style={{position: 'absolute', left: 6, top: this.height + 3 - this.y(ylines[i])}}>
+          <Text style={styles.yAxisLabel}>{ylines[i]}</Text>
+        </View>
+      );
+
+      shapes.push(element);
+    }
+
+    return shapes;
+
+  }
+
+  /**
    * Renders the component
    */
   render() {
@@ -213,14 +302,18 @@ class TotoBarChart extends Component {
     let bars = this.createBars(this.state.data);
     let labels = this.createValueLabels(this.state.data);
     let xLabels = this.createXAxisLabels(this.state.data);
+    let ylines = this.createYLines(this.state.yLines);
+    let ylinesLabels = this.createYLinesLabels(this.state.yLines);
 
     return (
       <View style={styles.container}>
         <Surface height={this.props.height} width={window.width}>
           {bars}
+          {ylines}
         </Surface>
         {labels}
         {xLabels}
+        {ylinesLabels}
       </View>
     )
   }
@@ -243,7 +336,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   xAxisLabel: {
-    color: theme.color().COLOR_TEXT + '50',
-    fontSize: 14,
+    color: theme.color().COLOR_THEME_LIGHT,
+    fontSize: 12,
+  },
+  yAxisLabel: {
+    color: theme.color().COLOR_THEME_LIGHT,
+    fontSize: 10,
   },
 });
