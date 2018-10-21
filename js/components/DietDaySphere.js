@@ -8,6 +8,7 @@ import * as array from 'd3-array';
 import * as path from 'd3-path';
 import * as theme from '../styles/ThemeColors';
 import * as TotoEventBus from '../services/TotoEventBus';
+import moment from 'moment';
 
 import DietAPI from '../services/DietAPI';
 
@@ -153,7 +154,7 @@ export default class DietDaySphere extends Component {
    */
   loadCalories() {
 
-    new DietAPI().getTodayMeals().then(data => {
+    new DietAPI().getCaloriesPerDay(moment().format('YYYYMMDD')).then(data => {
 
       if (data == null || data.meals == null) return;
 
@@ -161,9 +162,7 @@ export default class DietDaySphere extends Component {
       var calories = 0;
 
       // Calculate the total amount of calories
-      for (var i = 0; i < data.meals.length; i++) {
-        calories += data.meals[i].calories;
-      }
+      if (data.meals.length > 0) calories = data.meals[0].calories;
 
       // Calculate the progress and start the animation
       var caloriesProgress = calories * 360 / this.state.caloriesGoal;
