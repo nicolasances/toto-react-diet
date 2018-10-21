@@ -14,8 +14,8 @@ const window = Dimensions.get('window');
 /**
  * Creates a bar chart
  * Requires the following:
- * - data               : the data to create the chart in the following form:
- *                        [ { x: numeric, x value,
+ * - data                : the data to create the chart in the following form:
+ *                         [ { x: numeric, x value,
  *                            y: numeric, y value,
  *                            temporary: boolean, optional, if true will highlight this element as a temporary one
  *                          }, {...} ]
@@ -31,6 +31,10 @@ const window = Dimensions.get('window');
  *                         if passed, it's an [y1, y2, y3, ...]
  *                         each value will correspond to a horizontal line
  * - minY                : (optional) the minimum y value to consider as the "lowest" value, when defining the SCALE
+ * - overlayLineData     : (optipnal) the data to draw a line chart on top of the bar chart
+ *                         it's an [{x, y}, {x, y}, ...]
+ *                         note that the x axis is the same as the one used for the barchart, so it follows the same scale
+ * - overlayMinY         : (optional) the minimum y value to consider as the "lowest" value of the overlay line, when defining the SCALE
  */
 class TotoBarChart extends Component {
 
@@ -43,7 +47,8 @@ class TotoBarChart extends Component {
     // Init the state!
     this.state = {
       data: null,
-      yLines: []
+      yLines: [],
+      overlayLineData: null
     }
   }
 
@@ -88,11 +93,19 @@ class TotoBarChart extends Component {
     this.x = d3.scale.scaleLinear().range([this.barSpacing, window.width - this.barWidth - this.barSpacing]).domain([xMin, xMax]);
     this.y = d3.scale.scaleLinear().range([0, this.height]).domain([yMin, yMax]);
 
+    // Define the min and max value of the Y scale for the overalay line chart, if any
+    let yOverlayMin = props.overlayMinY ? props.overlayMinY : 0;
+    let yOverlayMax = props.overlayLineData ? d3.array.max(props.overlayLineData, (d) => {return d.y}) : 0;
+
+    // Define the y scale for the overlay line, if any
+    this.yOverlay = props.overlayLineData ? d3.scale.scaleLinear().range([0, this.height]).domain([yOverlayMin, yOverlayMax]) : null;
+
     // Update the state with the new data
-    this.setState({data: [], yLines: []}, () => {
+    this.setState({data: [], yLines: [], overlayLineData: []}, () => {
       this.setState({
         data: props.data,
-        yLines: props.yLines
+        yLines: props.yLines,
+        overlayLineData: props.overlayLineData
       })
     });
   }
@@ -103,12 +116,11 @@ class TotoBarChart extends Component {
   createShape(path, color, fillColor, strokeWidth) {
 
     if (strokeWidth == null) strokeWidth = 0;
-    if (fillColor == null) fillColor = color;
 
     let key = 'TotoBarChartShape-' + Math.random();
 
     return (
-      <Shape key={key} d={path} strokeWidth={strokeWidth} stroke={color} fill={color} />
+      <Shape key={key} d={path} strokeWidth={strokeWidth} stroke={color} fill={fillColor} />
     )
   }
 
@@ -235,7 +247,7 @@ class TotoBarChart extends Component {
       let color = (datum.temporary) ? theme.color().COLOR_THEME_DARK + '80' : theme.color().COLOR_THEME_DARK;
 
       // Push the Shape object
-      bars.push(this.createShape(p.toString(), color));
+      bars.push(this.createShape(p.toString(), color, color));
     }
 
     // Return the bars
@@ -295,6 +307,25 @@ class TotoBarChart extends Component {
   }
 
   /**
+   * Creates an overlay line chart on top of the bar chart
+   */
+  createOverlayLineChart(data) {
+
+    if (data == null) return;
+
+    let line = d3.shape.line()
+                  .x((d) => {return this.x(d.x)})
+                  .y((d) => {return this.height - this.yOverlay(d.y)})
+
+    let path = line(data);
+
+    let shape = this.createShape(path, theme.color().COLOR_THEME_LIGHT, null, 2);
+
+    return shape;
+
+  }
+
+  /**
    * Renders the component
    */
   render() {
@@ -304,12 +335,14 @@ class TotoBarChart extends Component {
     let xLabels = this.createXAxisLabels(this.state.data);
     let ylines = this.createYLines(this.state.yLines);
     let ylinesLabels = this.createYLinesLabels(this.state.yLines);
+    let overlayLineChart = this.createOverlayLineChart(this.state.overlayLineData)
 
     return (
       <View style={styles.container}>
         <Surface height={this.props.height} width={window.width}>
           {bars}
           {ylines}
+          {overlayLineChart}
         </Surface>
         {labels}
         {xLabels}

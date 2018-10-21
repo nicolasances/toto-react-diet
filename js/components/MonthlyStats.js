@@ -3,6 +3,7 @@ import {View, Text, StyleSheet} from 'react-native';
 import * as TotoEventBus from '../services/TotoEventBus';
 import * as theme from '../styles/ThemeColors';
 import DietAPI from '../services/DietAPI';
+import WeightAPI from '../services/WeightAPI';
 import TotoBarChart from '../widgets/TotoBarChart';
 import moment from 'moment';
 
@@ -15,6 +16,7 @@ export default class MonthlyStats extends Component {
 
     this.state = {
       mealsStats: [],
+      weights: [],
       // Define the y lines
       ylines: [2000, 2500, 3000]
     };
@@ -26,6 +28,7 @@ export default class MonthlyStats extends Component {
     this.updateState = this.updateState.bind(this);
     this.onMealAdded = this.onMealAdded.bind(this);
     this.loadData = this.loadData.bind(this);
+    this.onWeightsLoaded = this.onWeightsLoaded.bind(this);
   }
 
   // When the component is mounted
@@ -85,6 +88,31 @@ export default class MonthlyStats extends Component {
   }
 
   /**
+   * Updates the state when the weights have been loaded
+   */
+  onWeightsLoaded(response) {
+
+    if (response == null) return;
+
+    let data = [];
+
+    // Create the {x, y} coordinates to pass to the graph
+    for (var i = 0; i < response.weights.length; i++) {
+
+      let week = response.weights[i];
+
+      // Create a date out of the week and year (like the day of the first day of that week)
+      let date = moment(week.year + '-' + week.weekOfYear, 'YYYYWW');
+
+      data.push({x: new Date(date), y: week.weight});
+
+    }
+
+    this.setState({weights: []}, () => {this.setState({weights: data})});
+
+  }
+
+  /**
    * Loads the weekly meals data from the API
    * Retrieves the meals of the week
    *
@@ -99,6 +127,8 @@ export default class MonthlyStats extends Component {
 		date = date.subtract(this.prospection, 'months');
 
 		new DietAPI().getCaloriesPerWeek(date.format('YYYYMMDD')).then(this.updateState);
+
+    new WeightAPI().getWeightsPerWeek(date.format('YYYYMMDD')).then(this.onWeightsLoaded);
 
   }
 
@@ -119,6 +149,8 @@ export default class MonthlyStats extends Component {
               xAxisTransform={(x) => {return moment(x).format('MMM')}}
               xLabelMode='when-changed'
               xLabelWidth='unlimited'
+              overlayLineData={this.state.weights}
+              overlayMinY={70}
               />
       </View>
     )
