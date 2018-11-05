@@ -1,3 +1,3 @@
 
 export const API_URL = 'https://imatzdev.it/apis';
-export const AUTH = 'Basic dG90bzpzdG8=';
+export const AUTH = 'Basic c3RvOnRvdG8=';

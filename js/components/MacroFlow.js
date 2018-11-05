@@ -86,6 +86,9 @@ export default class MacroFlow extends Component {
         // Get the actual data for that date
         let datum = data[start.format('YYYYMMDD')];
 
+        // Convert the date
+        datum.date = new Date(moment(datum.date, 'YYYYMMDD'));
+
         // Put in the array
         if (datum) dataArray.push(datum);
 
