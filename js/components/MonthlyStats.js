@@ -70,6 +70,8 @@ export default class MonthlyStats extends Component {
 
       let week = response.meals[i];
 
+      if (week.week == 0) continue;
+
       // Skip this current week
       if (week.week == moment().format('WW') && week.year == moment().format('YYYY')) continue;
 
