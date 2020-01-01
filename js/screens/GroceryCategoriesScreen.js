@@ -6,6 +6,7 @@ import TotoFlatList from '../widgets/TotoFlatList';
 import * as theme from '../styles/ThemeColors';
 import * as TotoEventBus from '../services/TotoEventBus';
 import FRboTAPI from '../services/FRboTAPI';
+import DietAPI from '../services/DietAPI';
 
 /**
  * Shows the list of grocery categories.
@@ -41,6 +42,7 @@ export default class GroceriesCategoriesScreen extends Component {
 
     // Function binding
     this.onItemPress = this.onItemPress.bind(this);
+    this.onAdvicePressed = this.onAdvicePressed.bind(this);
     this.loadAdvices = this.loadAdvices.bind(this);
 
     this.loadAdvices();
@@ -51,11 +53,43 @@ export default class GroceriesCategoriesScreen extends Component {
    */
   loadAdvices() {
 
-    new FRboTAPI().predict().then((data) => {
-      this.setState({
-        advices: data
+    if (this.props.navigation.getParam('adviceMode')) {
+
+      // The needed data is an {} with: 
+      // - weekday (0 to 6, 0 being Monday)
+      // - time (e.g. "5:20" or "05:20")
+      // - nResults (optional, default 3)
+      adviceInput = this.props.navigation.getParam('adviceData');
+
+      new FRboTAPI().predict(adviceInput).then((data) => {
+        this.setState({
+          advices: data
+        })
       })
-    })
+    }
+
+  }
+
+  /**
+   * Reacts to one of the suggested aliments being pressed
+   * @param {} item 
+   */
+  onAdvicePressed(item) {
+
+    let grocerySelectionMode = this.props.navigation.getParam('grocerySelectionMode');
+
+    if (grocerySelectionMode) {
+
+        new DietAPI().getFood(item.item.alimentId).then((data) => {
+          
+            // Publish the event that the grocery (advice) has been clicked
+            TotoEventBus.bus.publishEvent({name: 'grocerySelected', context: {grocery: data}});
+        
+            // Navigate back to the selection screen
+            this.props.navigation.goBack(grocerySelectionMode.referer);
+        })
+
+    }
 
   }
 
@@ -94,7 +128,10 @@ export default class GroceriesCategoriesScreen extends Component {
   adviceDataExtractor(item) {
 
     return {
-      title: item.item.name
+      title: item.item.name,
+      avatar: {
+        size: 's'
+      }
     }
 
   }
@@ -110,9 +147,9 @@ export default class GroceriesCategoriesScreen extends Component {
         <View style={styles.adviceContainer}>
           <View style={styles.adviceHeader}>
             <Image source={require('../../img/chimp.png')} style={styles.chimp} />
-            <Text style={styles.adviceTitle}>Are you looking for this?</Text>
+            <Text style={styles.adviceTitle}>I have some suggestions! </Text>
           </View>
-          <TotoFlatList data={this.state.advices} dataExtractor={this.adviceDataExtractor} />
+          <TotoFlatList data={this.state.advices} dataExtractor={this.adviceDataExtractor} onItemPress={this.onAdvicePressed} />
         </View>
       )
     }
@@ -140,7 +177,8 @@ const styles = StyleSheet.create({
   },
   adviceContainer: {
     backgroundColor: theme.color().COLOR_THEME_DARK,
-    paddingVertical: 12
+    paddingVertical: 12,
+    paddingHorizontal: 6
   },
   adviceHeader: {
     flexDirection: 'row',
@@ -151,12 +189,12 @@ const styles = StyleSheet.create({
   adviceTitle: {
     fontSize: 14,
     height: 16,
-    color: theme.color().COLOR_THEME_LIGHT,
+    color: theme.color().COLOR_TEXT,
     marginLeft: 12,
   },
   chimp: {
     width: 24, 
     height: 24, 
-    tintColor: theme.color().COLOR_THEME_LIGHT
+    tintColor: theme.color().COLOR_TEXT
   }
 });

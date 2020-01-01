@@ -297,6 +297,19 @@ export default class DietAPI {
   }
 
   /**
+   * Get the specified food
+   */
+  getFood(id) {
+
+    return new TotoAPI().fetch('/diet/foods/' + id, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then((response => response.json()));
+  }
+
+  /**
    * Delete a food
    */
   deleteFood(foodId) {

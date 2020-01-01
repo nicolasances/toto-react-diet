@@ -9,13 +9,7 @@ export default class FRboTAPI {
   /**
    * Saves the provided meal
    */
-  predict() {
-
-    let data = {
-      weekday: 1, 
-      time: "6:20",
-      nResults: 4
-    };
+  predict(data) {
 
     // Post the data
     return new TotoAPI().fetch('/model/frbot/predict', {

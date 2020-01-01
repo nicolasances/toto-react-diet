@@ -285,9 +285,21 @@ export default class NewMealScreen extends Component {
     // Define a navigation key for this screen
     let navigationKey = 'NewMeal-' + Math.random()
 
+    // Define the data (time and weekday) needed to get advices from Toto ML
+    // The weekday from moment goes from 1 to 7 (1 Monday) while toto ML uses 0 as Monday
+    weekday = moment(this.state.mealDate, 'YYYYMMDD').weekday();
+    if (weekday == 0) weekday = 6;
+    else weekday--;
+
+    adviceData = {
+      weekday: weekday,
+      time: this.state.mealTime,
+      nResults: 4
+    }
+
     this.props.navigation.navigate({
       routeName: 'GroceriesCategories',
-      params: {grocerySelectionMode: {active: true, referer: navigationKey}, adviceMode: true},
+      params: {grocerySelectionMode: {active: true, referer: navigationKey}, adviceMode: true, adviceData: adviceData},
       key: navigationKey
     });
   }
