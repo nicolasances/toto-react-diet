@@ -4,9 +4,9 @@ import moment from 'moment';
 
 export function color() {
 
-  var hour = moment().format('H');
+  // var hour = moment().format('H');
 
-  if (hour < 7 || hour > 18) return themeNight;
+  // if (hour < 7 || hour > 18) return themeNight;
 
   return themeDay;
   // return themeNight;

@@ -4,6 +4,7 @@ import GroceriesList from '../components/GroceriesList';
 import TotoTitleBar from '../widgets/TotoTitleBar';
 import * as theme from '../styles/ThemeColors';
 import * as TotoEventBus from '../services/TotoEventBus';
+import { LoginManager } from 'react-native-fbsdk';
 
 /**
  * Shows the list of groceries
@@ -43,6 +44,7 @@ export default class GroceriesScreen extends Component<Props> {
     this.selectionMode = this.props.navigation.getParam('selectionMode');
 
     this.onItemPress = this.onItemPress.bind(this);
+    
   }
 
   /**

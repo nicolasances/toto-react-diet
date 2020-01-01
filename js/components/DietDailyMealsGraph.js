@@ -230,7 +230,7 @@ export default class DietDailyMealsGraph extends Component {
    * Render function
    */
   render () {
-
+    
     return (
       <View>
         <Surface style={styles.surface} width={this.width} height={this.height}>

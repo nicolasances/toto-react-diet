@@ -39,6 +39,8 @@ export default class HomeScreen extends Component<Props> {
    * Renders the home screen
    */
   render() {
+
+    // <DietDailyMealsGraph height={250} />
     return (
       <View style={styles.container}>
         <View style={{paddingTop: 12}}><DietDailyMealsTimeline /></View>
@@ -49,7 +51,7 @@ export default class HomeScreen extends Component<Props> {
         </View>
         <View style={{paddingBottom: 24, justifyContent: 'center'}}><DietDayMacros /></View>
         <Swiper style={{}} showsPagination={false}>
-          <DietDailyMealsGraph height={250} />
+          
           <WeeklyStats height={250} />
           <MonthlyStats height={250} />
         </Swiper>

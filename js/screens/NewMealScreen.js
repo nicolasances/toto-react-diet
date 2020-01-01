@@ -287,7 +287,7 @@ export default class NewMealScreen extends Component {
 
     this.props.navigation.navigate({
       routeName: 'GroceriesCategories',
-      params: {grocerySelectionMode: {active: true, referer: navigationKey}},
+      params: {grocerySelectionMode: {active: true, referer: navigationKey}, adviceMode: true},
       key: navigationKey
     });
   }
