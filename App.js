@@ -10,6 +10,7 @@ import GroceriesCategoriesScreen from './js/screens/GroceryCategoriesScreen';
 import GroceriesScreen from './js/screens/GroceriesScreen';
 import GroceryDetailScreen from './js/screens/GroceryDetailScreen';
 import NewMealScreen from './js/screens/NewMealScreen';
+import MagicAddFoodScreen from './js/screens/MagicAddFoodScreen';
 import NewMealFoodDetailScreen from './js/screens/NewMealFoodDetailScreen';
 import DateSelectionScreen from './js/screens/DateSelectionScreen';
 import MealPrepsScreen from './js/screens/MealPrepsScreen';
@@ -26,9 +27,10 @@ const RootStack = createStackNavigator({
   DateSelection: {screen: DateSelectionScreen},
   MealPreps: {screen: MealPrepsScreen},
   Goal: {screen: GoalScreen},
+  MagicAddFood: {screen: MagicAddFoodScreen},
 
 }, {
-  initialRouteName: 'Home',
+  initialRouteName: 'NewMeal',
   navigationOptions: {
     headerStyle: {
       backgroundColor: theme.color().COLOR_THEME,

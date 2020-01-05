@@ -67,6 +67,7 @@ export default class NewMealScreen extends Component {
     this.save = this.save.bind(this);
     this.saveAsPrep = this.saveAsPrep.bind(this);
     this.onMealPrepSelected = this.onMealPrepSelected.bind(this);
+    this.onPressMagicAddFood = this.onPressMagicAddFood.bind(this);
     this.deleteMealPrep = this.deleteMealPrep.bind(this);
   }
 
@@ -278,6 +279,31 @@ export default class NewMealScreen extends Component {
   }
 
   /**
+   * Called when the user wants to TotoMagically add food! 
+   */
+  onPressMagicAddFood() {
+
+    // Define the data (time and weekday) needed to get advices from Toto ML
+    // The weekday from moment goes from 1 to 7 (1 Monday) while toto ML uses 0 as Monday
+    weekday = moment(this.state.mealDate, 'YYYYMMDD').weekday();
+    if (weekday == 0) weekday = 6;
+    else weekday--;
+
+    mealData = {
+      weekday: weekday,
+      time: this.state.mealTime,
+      weekdayString: moment(this.state.mealDate, 'YYYYMMDD').format('dddd')
+    }
+
+
+    this.props.navigation.navigate({
+      routeName: 'MagicAddFood', 
+      params: {mealData: mealData}
+    })
+
+  }
+
+  /**
    * Called when the add food button is pressed
    */
   onPressAddFood() {
@@ -297,9 +323,10 @@ export default class NewMealScreen extends Component {
       nResults: 4
     }
 
+    // I AM DEACTIVATING THE ADVICE MODE, TO IMPLEMENT A DIFFERENT VERSION
     this.props.navigation.navigate({
       routeName: 'GroceriesCategories',
-      params: {grocerySelectionMode: {active: true, referer: navigationKey}, adviceMode: true, adviceData: adviceData},
+      params: {grocerySelectionMode: {active: true, referer: navigationKey}, adviceMode: false, adviceData: adviceData},
       key: navigationKey
     });
   }
@@ -388,7 +415,6 @@ export default class NewMealScreen extends Component {
       mealPrepDeleteButton = (
         <TotoIconButton
           image={require('../../img/trash.png')}
-          label='Delete'
           onPress={this.deleteMealPrep} />
       )
     }
@@ -398,14 +424,12 @@ export default class NewMealScreen extends Component {
       saveButton = (
         <TotoIconButton
           image={require('../../img/tick.png')}
-          label='Save'
           onPress={this.save} />
       );
 
       saveMealPrepButton = (
         <TotoIconButton
         image={require('../../img/db-check.png')}
-        label='Save as prep'
         onPress={this.saveAsPrep} />
       )
     }
@@ -442,8 +466,10 @@ export default class NewMealScreen extends Component {
 
         <View style={styles.buttonsContainer}>
             <TotoIconButton
+              image={require('../../img/voodoo.png')}
+              onPress={this.onPressMagicAddFood} />
+            <TotoIconButton
               image={require('../../img/add.png')}
-              label='Add some food'
               onPress={this.onPressAddFood} />
             {saveButton}
             {saveMealPrepButton}
