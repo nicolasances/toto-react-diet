@@ -30,7 +30,7 @@ const RootStack = createStackNavigator({
   MagicAddFood: {screen: MagicAddFoodScreen},
 
 }, {
-  initialRouteName: 'NewMeal',
+  initialRouteName: 'Home',
   navigationOptions: {
     headerStyle: {
       backgroundColor: theme.color().COLOR_THEME,

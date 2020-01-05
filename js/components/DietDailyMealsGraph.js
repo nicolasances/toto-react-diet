@@ -29,6 +29,7 @@ export default class DietDailyMealsGraph extends Component {
     this.height = this.props.height == null ? 250 : this.props.height;
     this.width = window.width;
     this.adjustBottom = 20;
+    this.heightPadding = -24;
 
     this.refreshData();
 
@@ -112,7 +113,7 @@ export default class DietDailyMealsGraph extends Component {
         .line(0, height-this.height);
 
     return (
-      <Shape key={key} d={path} strokeWidth={6} stroke={theme.color().COLOR_THEME_DARK}/>
+      <Shape key={key} d={path} strokeWidth={3} stroke={theme.color().COLOR_THEME_DARK}/>
     )
 
   }
@@ -162,7 +163,7 @@ export default class DietDailyMealsGraph extends Component {
 
     var area = d3.shape.area()
                   .x((d) => {return x(getTime(d.time))})
-                  .y1((d) => {return y(d.carbs * 4 + d.fat * 9 + d.proteins * 4) - 1 * (radiusScale(d.proteins) + radiusScale(d.fat) + radiusScale(d.carbs))})
+                  .y1((d) => {return y(d.carbs * 4 + d.fat * 9 + d.proteins * 4) - 1 * (radiusScale(d.proteins) + radiusScale(d.fat) + radiusScale(d.carbs) + this.heightPadding)})
                   .y0((d) => {return y(0)})
                   .curve(d3.shape.curveCardinal);
 
@@ -211,9 +212,9 @@ export default class DietDailyMealsGraph extends Component {
 
       var meal = this.meals[i];
 
-      var yp = y(meal.proteins * 4) - 1 * radiusScale(meal.proteins);
-      var yf = y(meal.fat * 9 + meal.proteins * 4) - 1 * (radiusScale(meal.proteins) + radiusScale(meal.fat)) - this.constants.macroPointRadius.gap;
-      var yc = y(meal.carbs * 4 + meal.fat * 9 + meal.proteins * 4) - 1 * (radiusScale(meal.proteins) + radiusScale(meal.fat) + radiusScale(meal.carbs))  - 2 * this.constants.macroPointRadius.gap;
+      var yp = y(meal.proteins * 4) - 1 * radiusScale(meal.proteins) - this.heightPadding;
+      var yf = y(meal.fat * 9 + meal.proteins * 4) - 1 * (radiusScale(meal.proteins) + radiusScale(meal.fat)) - this.constants.macroPointRadius.gap - this.heightPadding;
+      var yc = y(meal.carbs * 4 + meal.fat * 9 + meal.proteins * 4) - 1 * (radiusScale(meal.proteins) + radiusScale(meal.fat) + radiusScale(meal.carbs))  - 2 * this.constants.macroPointRadius.gap - this.heightPadding;
 
       shapes.push(this.macroBar(x(getTime(meal.time)), yc));
       shapes.push(this.macroPoint(x(getTime(meal.time)), yp, 'proteins', radiusScale(meal.proteins)));
