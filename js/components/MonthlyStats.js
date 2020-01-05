@@ -139,10 +139,9 @@ export default class MonthlyStats extends Component {
    */
   render() {
 
-    return (
-      <View style={{height: 250}}>
-        <View style={{flex: 1}}></View>
-        <TotoBarChart
+    let chart;
+    if (this.state.mealsStats) chart = (
+      <TotoBarChart
               height={200}
               barSpacing={1}
               data={this.state.mealsStats}
@@ -154,6 +153,12 @@ export default class MonthlyStats extends Component {
               overlayLineData={this.state.weights}
               overlayMinY={70}
               />
+    )
+
+    return (
+      <View style={{height: 250}}>
+        <View style={{flex: 1}}></View>
+        {chart}
       </View>
     )
   }
