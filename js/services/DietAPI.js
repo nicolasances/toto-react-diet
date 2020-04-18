@@ -316,4 +316,17 @@ export default class DietAPI {
     return new TotoAPI().fetch('/diet/foods/' + foodId, {method: 'DELETE'});
   }
 
+  /**
+   * Get the recommendations based on the time and date
+   */
+  getFoodRecommendations(date, time) {
+
+    return new TotoAPI().fetch('/diet/recommendations/foods?date=' + date + '&time=' + time, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then((response => response.json()));
+  }
+
 }

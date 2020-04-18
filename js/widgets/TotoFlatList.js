@@ -1,9 +1,11 @@
-import React, {Component} from 'react';
-import {FlatList, StyleSheet, Text, TouchableOpacity, Image, View} from 'react-native';
+import React, { Component } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, Image, View, PanResponder, Animated, Dimensions } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import * as theme from '../styles/ThemeColors';
 import * as TotoEventBus from '../services/TotoEventBus';
 import moment from 'moment';
+
+const windowWidth = Dimensions.get('window').width;
 
 /**
  * Flat List styled for toto.
@@ -28,6 +30,7 @@ import moment from 'moment';
  *                                          }
  *                            }
  *  - onItemPress()         : a function to be called when the item is pressed
+ *  - onSwipeLeft()         : a function to be called when the element is swiped left
  *  - avatarImageLoader()   : a function(item) that will have to load the avatar image and return a loaded <Image />
  */
 export default class TotoFlatList extends Component {
@@ -44,9 +47,9 @@ export default class TotoFlatList extends Component {
     return (
       <FlatList
         data={this.props.data}
-        renderItem={(item) => <Item item={item} avatarImageLoader={this.props.avatarImageLoader} dataExtractor={this.props.dataExtractor} onItemPress={this.props.onItemPress}/>}
-        keyExtractor={(item, index) => {return 'toto-flat-list-' + index}}
-        />
+        renderItem={(item) => <Item item={item} avatarImageLoader={this.props.avatarImageLoader} onSwipeLeft={this.props.onSwipeLeft} dataExtractor={this.props.dataExtractor} onItemPress={this.props.onItemPress} />}
+        keyExtractor={(item, index) => { return 'toto-flat-list-' + index }}
+      />
     )
   }
 
@@ -61,10 +64,78 @@ class Item extends Component {
     super(props);
 
     // Initialize the state with the provided item
-    this.state = this.props.item;
+    this.state = {
+      ...this.props.item,
+      opacity: 1
+    }
+
+    this.animatedOpacity = new Animated.Value(1);
+    this.animatedOpacity.addListener((progress) => {this.setState({opacity: progress.value})})
 
     // Bind this
     this.onDataChanged = this.onDataChanged.bind(this);
+
+    // Define the pan responder, to be able to delete an element on swiping left
+    this._panResponder = PanResponder.create({
+      // Ask to be the responder:
+      onStartShouldSetPanResponder: (evt, gestureState) => true,
+      onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => true,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+
+      onPanResponderGrant: (evt, gestureState) => {
+        // The gesture has started. Show visual feedback so the user knows
+        // what is happening!
+
+        // gestureState.d{x,y} will be set to zero now
+        this.animatedOpacity.setValue(0.7)
+        
+      },
+      onPanResponderMove: (evt, gestureState) => {
+
+        // If there is an action on swipe left
+        if (!this.props.onSwipeLeft) return;
+
+        // Check if swiping left
+        let swipingLeft = gestureState.dx < 0;
+
+        if (!swipingLeft) return;
+
+        let maxOpacityReduction = 0.7;
+        let distanceForMinOpacity = windowWidth / 2;
+
+        // How much did I move compared to the HALF of the window width
+        // Cause when I reach a movement of half the window width, the opacity should be at its lowest
+        let opacityReduction = maxOpacityReduction * (Math.abs(gestureState.dx) / distanceForMinOpacity)
+
+        if (opacityReduction > maxOpacityReduction) opacityReduction = maxOpacityReduction;
+
+        // If it is, start phasing opacity
+        this.animatedOpacity.setValue(0.7 - opacityReduction)
+        
+      },
+      onPanResponderTerminationRequest: (evt, gestureState) => true,
+      onPanResponderRelease: (evt, gestureState) => {
+        // Check the direction : < 0 => left, >0 => right
+        // I also decided that if you swipe less than -x px => I consider you're only clicking
+        let swipedLeft = gestureState.dx < -50;
+
+        if (swipedLeft && this.props.onSwipeLeft) this.props.onSwipeLeft(this.props.item);
+        else {
+          this.animatedOpacity.setValue(1)
+
+          // Call a onpress function if any
+          if (this.props.onItemPress) this.props.onItemPress(this.props.item);
+        }
+        
+      },
+      onPanResponderTerminate: (evt, gestureState) => {
+        // Another component has become the responder, so this gesture
+        // should be cancelled
+        this.animatedOpacity.setValue(1)
+      },
+      onShouldBlockNativeResponder: (evt, gestureState) => true,
+    });
   }
 
   componentDidMount() {
@@ -93,10 +164,10 @@ class Item extends Component {
     // Define what avatar has to be rendered
     let avatarContainer;
     let avatarSizeStyle = styles.avatarSizeM;
-    
+
     // If there's an avatar
     if (data.avatar != null) {
-      
+
       if (data.avatar.size != null && data.avatar.size == 's') avatarSizeStyle = styles.avatarSizeS;
 
       let avatar;
@@ -114,7 +185,7 @@ class Item extends Component {
         imageSize = 20;
         if (data.avatar.size == 's') imageSize = 14;
         // If there's a source:
-        if (data.avatar.value) avatar = <Image source={data.avatar.value}  style={{width: imageSize, height: imageSize, tintColor: theme.color().COLOR_TEXT}} />
+        if (data.avatar.value) avatar = <Image source={data.avatar.value} style={{ width: imageSize, height: imageSize, tintColor: theme.color().COLOR_TEXT }} />
         // If there's a configured image Loader
         else if (this.props.avatarImageLoader) {
           // Load the image
@@ -187,17 +258,20 @@ class Item extends Component {
 
     // Text Container styles
     textContainerSizeStyle = styles.textContainerSizeM;
-    if (!data.avatar ||  data.avatar.size == 's') textContainerSizeStyle = styles.textContainerSizeS;
+    if (!data.avatar || data.avatar.size == 's') textContainerSizeStyle = styles.textContainerSizeS;
+
+    // Opacity of the element 
+    let opacity = {opacity: this.state.opacity}
 
     return (
-      <TouchableOpacity style={styles.item} onPress={() => {if (this.props.onItemPress) this.props.onItemPress(this.props.item)}}>
+      <View style={[styles.item, opacity]} {...this._panResponder.panHandlers}>
 
         {avatarContainer}
 
         {dateRange}
 
         <View style={[styles.textContainer, textContainerSizeStyle]}>
-          <Text style={{color: theme.color().COLOR_TEXT}}>{data.title}</Text>
+          <Text style={{ color: theme.color().COLOR_TEXT }}>{data.title}</Text>
         </View>
 
         {sign}
@@ -206,7 +280,7 @@ class Item extends Component {
           <Text style={styles.leftSideValue}>{data.leftSideValue}</Text>
         </View>
 
-      </TouchableOpacity>
+      </View>
     )
   }
 }

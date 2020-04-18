@@ -8,6 +8,7 @@ import TotoIconButton from '../widgets/TotoIconButton';
 import DietAPI from '../services/DietAPI';
 import * as TotoEventBus from '../services/TotoEventBus';
 import * as theme from '../styles/ThemeColors';
+import * as config from '../Config';
 import moment from 'moment';
 
 const width = Dimensions.get('window').width;
@@ -60,7 +61,9 @@ export default class NewMealScreen extends Component {
 
     // Bind the onFoodSelected to this class
     this.onFoodSelected = this.onFoodSelected.bind(this);
+    this.onFoodDeleted = this.onFoodDeleted.bind(this);
     this.onFoodClick = this.onFoodClick.bind(this);
+    this.onFoodSwipeLeft = this.onFoodSwipeLeft.bind(this);
     this.onPressAddFood = this.onPressAddFood.bind(this);
     this.onFoodAmountChanged = this.onFoodAmountChanged.bind(this);
     this.onDateChanged = this.onDateChanged.bind(this);
@@ -69,6 +72,7 @@ export default class NewMealScreen extends Component {
     this.onMealPrepSelected = this.onMealPrepSelected.bind(this);
     this.onPressMagicAddFood = this.onPressMagicAddFood.bind(this);
     this.deleteMealPrep = this.deleteMealPrep.bind(this);
+    this.getFoodRecommendations = this.getFoodRecommendations.bind(this);
   }
 
   /**
@@ -80,8 +84,12 @@ export default class NewMealScreen extends Component {
     TotoEventBus.bus.subscribeToEvent('foodAmountInMealChanged', this.onFoodAmountChanged);
     TotoEventBus.bus.subscribeToEvent('newMealTimeChanged', this.onDateChanged);
     TotoEventBus.bus.subscribeToEvent('mealPrepSelected', this.onMealPrepSelected);
+    TotoEventBus.bus.subscribeToEvent('groceryDeleted', this.onFoodDeleted);
+    
+    // Load the food recommendations
+    this.getFoodRecommendations()
   }
-
+  
   /**
    * When unmounting, unsubscribe
    */
@@ -90,6 +98,26 @@ export default class NewMealScreen extends Component {
     TotoEventBus.bus.unsubscribeToEvent('foodAmountInMealChanged', this.onFoodAmountChanged);
     TotoEventBus.bus.unsubscribeToEvent('newMealTimeChanged', this.onDateChanged);
     TotoEventBus.bus.unsubscribeToEvent('mealPrepSelected', this.onMealPrepSelected);
+    TotoEventBus.bus.unsubscribeToEvent('groceryDeleted', this.onFoodDeleted);
+  }
+
+  /**
+   * Retrieves the food recommendations based on the state
+   */
+  getFoodRecommendations() {
+    
+    new DietAPI().getFoodRecommendations(this.state.mealDate, this.state.mealTime).then((data) => {
+
+      if (!data || !data.foods) return;
+
+      for (var i = 0; i < data.foods.length; i++) {
+
+        let food = data.foods[i];
+
+        TotoEventBus.bus.publishEvent({name: 'grocerySelected', context: {grocery: food}});
+      }
+      
+    })
   }
 
   /**
@@ -279,6 +307,56 @@ export default class NewMealScreen extends Component {
   }
 
   /**
+   * Called when an aliment is deleted from the list
+   */
+  onFoodDeleted(event) {
+
+    let food = event.context.grocery;
+    
+
+    // Delete the aliment
+    let newFoods = []
+    for (var i = 0; i < this.state.foods.length; i++) {
+      let f = this.state.foods[i];
+      if (f.id != event.context.grocery.id) newFoods.push(f);
+    }
+
+    // How many calories am I removing? 
+    let totalCal = this.state.calories;
+    let totalP = this.state.proteins;
+    let totalC = this.state.carbs;
+    let totalF = this.state.fat;
+
+    if (food.amountGr != null) {
+      totalCal -= food.calories * food.amountGr / 100;
+      totalC -= food.carbs * food.amountGr / 100;
+      totalF -= food.fat * food.amountGr / 100;
+      totalP -= food.proteins * food.amountGr / 100;
+    }
+    else if (food.amountMl != null) {
+      totalCal -= food.calories * food.amountMl / 100;
+      totalC -= food.carbs * food.amountMl / 100;
+      totalF -= food.fat * food.amountMl / 100;
+      totalP -= food.proteins * food.amountMl / 100;
+    }
+    else if (food.amount != null) {
+      totalCal -= food.calories * food.amount;
+      totalC -= food.carbs * food.amount;
+      totalF -= food.fat * food.amount;
+      totalP -= food.proteins * food.amount;
+    }
+
+    // Refresh the state
+    this.setState({foods: []}, () => {this.setState({
+      foods: newFoods,
+      calories: totalCal, 
+      proteins: totalP,
+      carbs: totalC,
+      fat: totalF
+    })});
+  }
+
+  /**
    * Called when the user wants to TotoMagically add food! 
    */
   onPressMagicAddFood() {
@@ -337,6 +415,13 @@ export default class NewMealScreen extends Component {
    */
   onFoodClick(item) {
       this.props.navigation.navigate('NewMealFoodDetail', {food: item.item});
+  }
+
+  /**
+   * Reacts to swiping left the food item => DELETE the food from the list
+   */
+  onFoodSwipeLeft(item) {
+    TotoEventBus.bus.publishEvent({name: 'groceryDeleted', context: {grocery: item.item}})
   }
 
   /**
@@ -481,6 +566,7 @@ export default class NewMealScreen extends Component {
             data={this.state.foods}
             dataExtractor={this.foodDataExtractor}
             onItemPress={this.onFoodClick}
+            onSwipeLeft={this.onFoodSwipeLeft}
             />
         </View>
 
