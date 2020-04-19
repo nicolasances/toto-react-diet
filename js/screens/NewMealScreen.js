@@ -56,7 +56,11 @@ export default class NewMealScreen extends Component {
       fat: 0,
       sugars: 0,
       calories: 0,
-      foods: []
+      foods: [],
+      // This helps when changing the date: I only want to reload recommendations if the list 
+      // contains untouched recommendations. If I have changed something, or added manually foods, 
+      // I shouldn't reload recommendations
+      untouchedRecommendations: true  
     }
 
     // Bind the onFoodSelected to this class
@@ -70,7 +74,6 @@ export default class NewMealScreen extends Component {
     this.save = this.save.bind(this);
     this.saveAsPrep = this.saveAsPrep.bind(this);
     this.onMealPrepSelected = this.onMealPrepSelected.bind(this);
-    this.onPressMagicAddFood = this.onPressMagicAddFood.bind(this);
     this.deleteMealPrep = this.deleteMealPrep.bind(this);
     this.getFoodRecommendations = this.getFoodRecommendations.bind(this);
   }
@@ -105,19 +108,32 @@ export default class NewMealScreen extends Component {
    * Retrieves the food recommendations based on the state
    */
   getFoodRecommendations() {
-    
-    new DietAPI().getFoodRecommendations(this.state.mealDate, this.state.mealTime).then((data) => {
 
-      if (!data || !data.foods) return;
-
-      for (var i = 0; i < data.foods.length; i++) {
-
-        let food = data.foods[i];
-
-        TotoEventBus.bus.publishEvent({name: 'grocerySelected', context: {grocery: food}});
-      }
+    this.setState({
+      mealPrepId: null,
+      carbs: 0,
+      proteins: 0,
+      fat: 0,
+      sugars: 0,
+      calories: 0,
+      foods: [],
+      untouchedRecommendations: true
+    }, () => {
       
-    })
+      new DietAPI().getFoodRecommendations(this.state.mealDate, this.state.mealTime).then((data) => {
+  
+        if (!data || !data.foods) return;
+  
+        for (var i = 0; i < data.foods.length; i++) {
+  
+          let food = data.foods[i];
+  
+          TotoEventBus.bus.publishEvent({name: 'grocerySelected', context: {grocery: food, isRecommendation: true}});
+        }
+        
+      })
+
+    });
   }
 
   /**
@@ -128,7 +144,8 @@ export default class NewMealScreen extends Component {
 
     // First clear the foods:
     this.setState({
-      foods: []
+      foods: [], 
+      untouchedRecommendations: false
     }, () => {
       // Then Update the state object
       this.setState({
@@ -160,7 +177,8 @@ export default class NewMealScreen extends Component {
       fat: 0,
       sugars: 0,
       calories: 0,
-      foods: []
+      foods: [],
+      untouchedRecommendations: true
     });
   }
 
@@ -173,6 +191,9 @@ export default class NewMealScreen extends Component {
       mealTime: moment(event.context.date).format('HH:mm'),
       mealDateFormatted: moment(event.context.date).format('ddd DD MMM YYYY'),
       mealDate: moment(event.context.date).format('YYYYMMDD'),
+    }, () => {
+      // In case you change the date with only recommendations loaded but not changed, reload recommendations
+      if (this.state.untouchedRecommendations) this.getFoodRecommendations();
     })
   }
 
@@ -286,7 +307,8 @@ export default class NewMealScreen extends Component {
       proteins: totalP,
       carbs: totalC,
       fat: totalF,
-      foods: foods
+      foods: foods,
+      untouchedRecommendations: false
     }));
 
   }
@@ -298,10 +320,12 @@ export default class NewMealScreen extends Component {
 
     // Get the food out of the event
     var food = event.context.grocery;
+    var isRecommendation = event.context.isRecommendation != null && event.context.isRecommendation;
 
     // Add the food
     this.setState(prevState => ({
-      foods: [...prevState.foods, food]
+      foods: [...prevState.foods, food], 
+      untouchedRecommendations: isRecommendation
     }));
 
   }
@@ -354,31 +378,6 @@ export default class NewMealScreen extends Component {
       carbs: totalC,
       fat: totalF
     })});
-  }
-
-  /**
-   * Called when the user wants to TotoMagically add food! 
-   */
-  onPressMagicAddFood() {
-
-    // Define the data (time and weekday) needed to get advices from Toto ML
-    // The weekday from moment goes from 1 to 7 (1 Monday) while toto ML uses 0 as Monday
-    weekday = moment(this.state.mealDate, 'YYYYMMDD').weekday();
-    if (weekday == 0) weekday = 6;
-    else weekday--;
-
-    mealData = {
-      weekday: weekday,
-      time: this.state.mealTime,
-      weekdayString: moment(this.state.mealDate, 'YYYYMMDD').format('dddd')
-    }
-
-
-    this.props.navigation.navigate({
-      routeName: 'MagicAddFood', 
-      params: {mealData: mealData}
-    })
-
   }
 
   /**
