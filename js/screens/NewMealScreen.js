@@ -129,6 +129,35 @@ export default class NewMealScreen extends Component {
           let food = data.foods[i];
   
           TotoEventBus.bus.publishEvent({name: 'grocerySelected', context: {grocery: food, isRecommendation: true}});
+
+          // Predict the amount for the food
+          new DietAPI().predictFoodAmount(food.id).then((amountPred) => {
+
+            let amount = null;
+            let amountType = null;
+            if (amountPred.amountGr) {
+              amount = amountPred.amountGr;
+              amountType = 'gr'
+            }
+            else if (amountPred.amountMl) {
+              amount = amountPred.amountMl;
+              amountType = 'gr'
+            }
+            else {
+              amount = amountPred.amount;
+            }
+
+            // If there was no prediction, stop
+            if (!amount) return;
+
+            // 1. publish the 'amount set' event
+            TotoEventBus.bus.publishEvent({name: 'foodAmountInMealChanged', context: {
+              food: {id: amountPred.foodId},
+              amount: amount,
+              unit: amountType
+            }});
+
+          })
         }
         
       })

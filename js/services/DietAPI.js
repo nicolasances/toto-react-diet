@@ -329,4 +329,18 @@ export default class DietAPI {
     }).then((response => response.json()));
   }
 
+  /**
+   * Returns the predicted amount for the specified food
+   */
+  predictFoodAmount(foodId) {
+
+    return new TotoAPI().fetch('/diet/recommendations/foods/' + foodId + '/amount', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then((response => response.json()));
+
+  }
+
 }
