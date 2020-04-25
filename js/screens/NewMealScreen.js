@@ -130,36 +130,7 @@ export default class NewMealScreen extends Component {
   
           TotoEventBus.bus.publishEvent({name: 'grocerySelected', context: {grocery: food, isRecommendation: true}});
 
-          // Predict the amount for the food
-          new DietAPI().predictFoodAmount(food.id).then((amountPred) => {
-
-            let amount = null;
-            let amountType = null;
-            if (amountPred.amountGr) {
-              amount = amountPred.amountGr;
-              amountType = 'gr'
-            }
-            else if (amountPred.amountMl) {
-              amount = amountPred.amountMl;
-              amountType = 'gr'
-            }
-            else {
-              amount = amountPred.amount;
-            }
-
-            // If there was no prediction, stop
-            if (!amount) return;
-
-            // 1. publish the 'amount set' event
-            TotoEventBus.bus.publishEvent({name: 'foodAmountInMealChanged', context: {
-              food: {id: amountPred.foodId},
-              amount: amount,
-              unit: amountType
-            }});
-
-          })
         }
-        
       })
 
     });
@@ -357,6 +328,24 @@ export default class NewMealScreen extends Component {
       untouchedRecommendations: isRecommendation
     }));
 
+    // Predict the amount for the food
+    new DietAPI().predictFoodAmount(food.id).then((amountPred) => {
+
+      let amount = amountPred.amountGr ? amountPred.amountGr : (amountPred.amountMl ? amountPred.amountMl : amountPred.amount);
+      let amountType = amountPred.amountGr ? 'gr' : (amountPred.amountMl ? 'ml' : null);
+
+      // If there was no prediction, stop
+      if (!amount) return;
+
+      // 1. publish the 'amount set' event
+      TotoEventBus.bus.publishEvent({name: 'foodAmountInMealChanged', context: {
+        food: {id: amountPred.foodId},
+        amount: amount,
+        unit: amountType
+      }});
+
+    })
+
   }
 
   /**
@@ -402,10 +391,10 @@ export default class NewMealScreen extends Component {
     // Refresh the state
     this.setState({foods: []}, () => {this.setState({
       foods: newFoods,
-      calories: totalCal, 
-      proteins: totalP,
-      carbs: totalC,
-      fat: totalF
+      calories: Math.abs(totalCal), 
+      proteins: Math.abs(totalP),
+      carbs: Math.abs(totalC),
+      fat: Math.abs(totalF)
     })});
   }
 
