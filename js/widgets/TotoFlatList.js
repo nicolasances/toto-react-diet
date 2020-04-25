@@ -21,6 +21,7 @@ const windowWidth = Dimensions.get('window').width;
  *                                       }
  *                              sign :    an image to put as a "sign" (e.g. info sign to show that this item has info attached)
  *                                        should be a loaded image, (provided as require(..), so already loaded)
+ *                              signSize : (optional, default 's') the size of the sign. Can be 's', 'm'
  *                              dateRange:  an object that describes a range of date. That will be used instead of an avatar
  *                                          { start:  'starting date', formatted as YYYYMMDD string
  *                                            end:    'ending date', formatted as YYYYMMDD string,
@@ -249,10 +250,12 @@ class Item extends Component {
 
     // If there is a sign
     let sign;
+    let signSize = { width: 18, height: 18 }
+    if (data.signSize && data.signSize == 'm') signSize = { width: 24, height: 24 }
 
     if (data.sign) sign = (
       <View style={styles.signContainer}>
-        <Image source={data.sign} style={styles.sign} />
+        <Image source={data.sign} style={[styles.sign, signSize]} />
       </View>
     )
 
@@ -341,8 +344,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   sign: {
-    width: 18,
-    height: 18,
     tintColor: theme.color().COLOR_ACCENT_LIGHT
   },
   dateRangeContainer: {

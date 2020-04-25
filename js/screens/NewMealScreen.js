@@ -265,6 +265,8 @@ export default class NewMealScreen extends Component {
 
       // Pick the food
       food = foods[i];
+      // Update the food: it's not being predicted (prediction is over at this point, stop the animation)
+      food.predicting = false;
 
       if (foods[i].id == event.context.food.id) {
 
@@ -308,7 +310,7 @@ export default class NewMealScreen extends Component {
       carbs: totalC,
       fat: totalF,
       foods: foods,
-      untouchedRecommendations: false
+      untouchedRecommendations: (event.context.prediction && prevState.untouchedRecommendations) ? true : false
     }));
 
   }
@@ -322,6 +324,9 @@ export default class NewMealScreen extends Component {
     var food = event.context.grocery;
     var isRecommendation = event.context.isRecommendation != null && event.context.isRecommendation;
 
+    // Set the state as "prediction loading"
+    food.predicting = true;
+
     // Add the food
     this.setState(prevState => ({
       foods: [...prevState.foods, food], 
@@ -334,14 +339,12 @@ export default class NewMealScreen extends Component {
       let amount = amountPred.amountGr ? amountPred.amountGr : (amountPred.amountMl ? amountPred.amountMl : amountPred.amount);
       let amountType = amountPred.amountGr ? 'gr' : (amountPred.amountMl ? 'ml' : null);
 
-      // If there was no prediction, stop
-      if (!amount) return;
-
       // 1. publish the 'amount set' event
       TotoEventBus.bus.publishEvent({name: 'foodAmountInMealChanged', context: {
         food: {id: amountPred.foodId},
         amount: amount,
-        unit: amountType
+        unit: amountType,
+        prediction: true
       }});
 
     })
@@ -388,13 +391,17 @@ export default class NewMealScreen extends Component {
       totalP -= food.proteins * food.amount;
     }
 
+    let untouchedRecommendations = this.state.untouchedRecommendations;
+    if (newFoods.length == 0) untouchedRecommendations = true;
+
     // Refresh the state
     this.setState({foods: []}, () => {this.setState({
       foods: newFoods,
       calories: Math.abs(totalCal), 
       proteins: Math.abs(totalP),
       carbs: Math.abs(totalC),
-      fat: Math.abs(totalF)
+      fat: Math.abs(totalF), 
+      untouchedRecommendations: untouchedRecommendations
     })});
   }
 
@@ -481,6 +488,10 @@ export default class NewMealScreen extends Component {
     else if (item.item.amountMl != null) unit = 'ml';
     else unit = '';
 
+    // If the food prediction is being loaded, show the loading sign
+    let sign;
+    if (item.item.predicting) sign = require('../../img/loading.gif');
+
     return {
       title: item.item.name,
       avatar: {
@@ -488,7 +499,9 @@ export default class NewMealScreen extends Component {
         value: item.item.calories,
         unit: 'cal'
       },
-      leftSideValue: amount + unit
+      leftSideValue: amount + unit,
+      sign: sign, 
+      signSize: 'm'
     }
   }
 
@@ -567,9 +580,6 @@ export default class NewMealScreen extends Component {
         {mealPrepText}
 
         <View style={styles.buttonsContainer}>
-            <TotoIconButton
-              image={require('../../img/voodoo.png')}
-              onPress={this.onPressMagicAddFood} />
             <TotoIconButton
               image={require('../../img/add.png')}
               onPress={this.onPressAddFood} />
