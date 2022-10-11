@@ -19,9 +19,9 @@
     "react": "16.5.0",
     "react-art": "^16.5.1",
     "react-devtools": "^3.3.4",
-    "react-native": "0.57.0",
+    "react-native": "0.70.2",
     "react-native-animate-number": "^0.1.2",
-    "react-native-fbsdk": "^0.8.0",
+    "react-native-fbsdk": "^3.0.0",
     "react-native-swiper": "^1.5.13",
     "react-navigation": "^2.16.0"
   },
